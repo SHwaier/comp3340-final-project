@@ -1,0 +1,19 @@
+:root {
+	--skeleton-bg: #e2e2e2;
+	--skeleton-animate: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
+}
+
+.skeleton div {
+	animation: shimmer 1.5s infinite;
+	background-size: 200% 100%;
+	background-image: var(--skeleton-animate);
+}
+
+@keyframes shimmer {
+	0% {
+		background-position: -100% 0;
+	}
+	100% {
+		background-position: 100% 0;
+	}
+}

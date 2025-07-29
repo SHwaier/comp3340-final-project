@@ -1,0 +1,26 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+DirectoryIndex index.php
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# cleanup URLs because who wants to access filenames bruh
+# Rewrite URLs to .php if file exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ index.php [L]
+
+# Rewrite URLs to .html if file exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Environment Variables
+SetEnv DATABASE_HOST <your.db.hostname> 
+SetEnv DATABASE_USER <your.db.username>
+SetEnv DATABASE_PASS <your.db.password>
+SetEnv DATABASE_NAME <your.db.namehere> 

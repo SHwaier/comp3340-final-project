@@ -1,0 +1,23 @@
+INSERT INTO products (product_name, description, price, stock_quantity, category, image_url)
+VALUES 
+('Classic White Tee', 'A clean-cut, timeless white t-shirt made from 100% cotton.', 19.99, 100, 'T-Shirts', 'images/classic_white_tee.jpg'),
+('Black Hoodie', 'Cozy unisex black hoodie with fleece lining.', 39.99, 50, 'Hoodies', 'images/black_hoodie.jpg'),
+('Denim Jacket', 'Classic blue denim jacket with a vintage vibe.', 59.99, 40, 'Jackets', 'images/denim_jacket.jpg'),
+('Graphic Tee - Mountain Scene', 'Soft cotton tee featuring a bold mountain graphic.', 24.99, 80, 'T-Shirts', 'images/mountain_graphic_tee.jpg'),
+('Oversized Sweatshirt', 'Warm oversized sweatshirt in earthy tones.', 34.99, 65, 'Sweatshirts', 'images/oversized_sweatshirt.jpg'),
+('Plaid Flannel Shirt', 'Red and black plaid shirt, great for layering.', 32.50, 70, 'Shirts', 'images/plaid_flannel.jpg'),
+('Puffer Vest', 'Lightweight puffer vest perfect for chilly days.', 44.99, 35, 'Outerwear', 'images/puffer_vest.jpg'),
+('V-Neck Sweater', 'Soft knit v-neck sweater available in multiple colors.', 37.99, 60, 'Sweaters', 'images/vneck_sweater.jpg'),
+('Long Sleeve Henley', 'Stretchy and stylish long sleeve henley shirt.', 28.99, 45, 'Shirts', 'images/henley_shirt.jpg'),
+('Linen Button-Up', 'Breathable linen button-up shirt, ideal for summer.', 33.99, 55, 'Shirts', 'images/linen_buttonup.jpg'),
+('Windbreaker Jacket', 'Water-resistant windbreaker with hood.', 49.50, 30, 'Outerwear', 'images/windbreaker.jpg'),
+('Crewneck Tee - Abstract Print', 'Modern abstract print on high-quality cotton tee.', 21.99, 95, 'T-Shirts', 'images/abstract_tee.jpg'),
+('Tie-Dye Hoodie', 'Trendy tie-dye hoodie with front pouch pocket.', 42.99, 40, 'Hoodies', 'images/tiedye_hoodie.jpg'),
+('Striped Polo Shirt', 'A classic striped polo made from breathable cotton.', 29.99, 50, 'Shirts', 'images/striped_polo.jpg'),
+('Sherpa-Lined Denim Jacket', 'Rugged denim outer with soft sherpa lining for extra warmth.', 64.99, 35, 'Jackets', 'images/sherpa_denim_jacket.jpg'),
+('Athletic Zip-Up Hoodie', 'Lightweight performance hoodie perfect for workouts or layering.', 49.99, 40, 'Hoodies', 'images/athletic_zipup.jpg'),
+('Mock Neck Pullover', 'Minimalist mock neck sweatshirt with a modern fit.', 39.99, 45, 'Sweatshirts', 'images/mock_neck_pullover.jpg'),
+('Corduroy Overshirt', 'Stylish corduroy overshirt in deep earthy tones.', 44.99, 30, 'Shirts', 'images/corduroy_overshirt.jpg'),
+('Baseball Jersey Tee', 'Two-tone short sleeve tee with retro baseball-inspired design.', 27.99, 60, 'Tees', 'images/baseball_jersey_tee.jpg'),
+('Knitted Turtleneck Sweater', 'Warm and stylish knitted turtleneck for chilly weather.', 42.99, 38, 'Sweaters', 'images/knitted_turtleneck.jpg'),
+('Cropped Utility Jacket', 'Trendy cropped utility jacket with multiple pockets.', 59.99, 28, 'Jackets', 'images/cropped_utility_jacket.jpg');
