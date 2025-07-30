@@ -87,7 +87,7 @@ a:hover {
      GLOBAL STYLES
      ========================= */
 [data-theme="dark"] .icon {
-	/* A handy filter I generated using this cool toold on codepen by some random g: https://codepen.io/sosuke/pen/Pjoqqp */
+	/* A handy filter I generated using this cool tool on codepen by some random g: https://codepen.io/sosuke/pen/Pjoqqp */
 	/* Target color is white */
 	filter: invert(100%) sepia(39%) saturate(2%) hue-rotate(349deg) brightness(105%) contrast(101%);
 }
@@ -350,7 +350,8 @@ nav a {
 	color: var(--accent-color);
 }
 
-.product-card button {
+.product-card button,
+.button {
 	background-color: var(--accent-color);
 	color: white;
 	padding: 0.5rem 1rem;
@@ -359,7 +360,8 @@ nav a {
 	cursor: pointer;
 }
 
-.product-card button:hover {
+.product-card button:hover,
+.button:hover {
 	background-color: var(--accent-hover);
 }
 

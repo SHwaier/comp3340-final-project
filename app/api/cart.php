@@ -29,7 +29,7 @@ if ($userId === null) {
     echo json_encode(["error" => "Unauthorized"]);
     exit;
 }
-
+// adding products to cart
 if ($method === 'POST') {
     parse_str(file_get_contents("php://input"), $data);
     $productId = $data['product_id'] ?? null;
@@ -68,7 +68,7 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-
+// updating cart items
 } else if ($method === 'PUT') {
     parse_str(file_get_contents("php://input"), $data);
     $productId = $data['product_id'] ?? null;
@@ -98,7 +98,7 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-
+// removing products from cart
 } else if ($method === 'DELETE') {
     parse_str(file_get_contents("php://input"), $data);
     $productId = $data['product_id'] ?? null;

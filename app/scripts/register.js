@@ -73,7 +73,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             return;
         }
 
-        // ✅ Token received — store and redirect
+        // Token received — store and redirect
         localStorage.setItem('token', loginData.token);
         document.cookie = `token=${loginData.token}; path=/; secure; samesite=strict`;
 

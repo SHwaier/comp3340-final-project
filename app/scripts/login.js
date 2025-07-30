@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Handle successful login
                 // Store the token in a cookie with secure and same-site attributes, and set the path to root
                 document.cookie = `token=${data.token}; path=/; secure; samesite=strict`;
-
                 window.location.href = '/'; // Redirect to homepage
             } else {
                 errorMsg.textContent = "Unexpected response.";

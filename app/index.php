@@ -19,8 +19,7 @@
                 Explore our exclusive collection of jackets, hoodies, and tops. Modern fashion for your everyday
                 lifestyle.
             </p>
-            <a href="/shop" class="hover-underline-animation left"
-                style="padding: 0.75rem 1.5rem; background: var(--accent-color); color: white; border-radius: 6px; font-weight: bold;">
+            <a href="/shop" class="button">
                 Shop Now
             </a>
         </section>

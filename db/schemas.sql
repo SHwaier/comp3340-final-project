@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE IF NOT EXISTS cart (
     cart_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -35,4 +34,18 @@ CREATE TABLE IF NOT EXISTS cart (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user_profiles(user_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+
+-- Themes Table
+CREATE TABLE IF NOT EXISTS themes (
+    theme_id INT AUTO_INCREMENT PRIMARY KEY,
+    theme_name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+-- Current Theme Table (only one row expected to be stored)
+CREATE TABLE IF NOT EXISTS current_theme (
+    id INT PRIMARY KEY CHECK (id = 1),
+    theme_id INT NOT NULL,
+    set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (theme_id) REFERENCES themes(theme_id) ON DELETE CASCADE
 );
