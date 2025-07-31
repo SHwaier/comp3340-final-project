@@ -5,7 +5,7 @@ basic middleware implemented to protect some endpoints
 Authentication and authorization are both implemented, users either have the "admin" role, or the "customer"
 Input sanitization is also implemented to protect against SQL injection and XSS attacks
 Database credentials and JWT secret implemented as environment variable inside the Apache server, this way they are not exposed to the public and are kept private.
-Theme can be dynamically changed inside theme.js
+Theme can be by an admin from the admin portal at `/admin/settings`
 
 ## Tech Stack:
 ### Backend:
@@ -14,6 +14,7 @@ Theme can be dynamically changed inside theme.js
 - HTML
 - CSS
 - JavaScript
+- PHP
 ### Database
 - MariaDB
 
