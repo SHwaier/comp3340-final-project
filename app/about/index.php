@@ -1,6 +1,6 @@
 <?php
 ?><!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <?php include_once '../components/metas.php'; ?>

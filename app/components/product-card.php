@@ -26,7 +26,6 @@
             const res = await fetch(`/api/products.php?id=<?= $product_id ?>`);
             const data = await res.json();
             const product = Array.isArray(data) ? data[0] : data;
-            console.log(product);
 
             if (!product || !product.product_id) {
                 container.innerHTML = `<p style="color: var(--error-color);">Product not found.</p>`;
@@ -45,44 +44,19 @@
                 </a>
                 <h2>${product.product_name}</h2>
                 <p>${product.description.slice(0, 100)}...</p>
-                <div class="price">$${price}</div>
-                ${outOfStock
+                <div class="flex flex-row flex-space-between" style="align-items: center;">
+                     <div class="price">$${price}</div>
+                     ${outOfStock
                     ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                    : `<button onclick="addToCart(${product.product_id})">Add to Cart</button>`}
+                    : `<button class="check-button" onclick="addToCart(${product.product_id})">
+                             <span class="checkmark">&#10003;</span>
+                             <span class="btn-text">Add to Cart</span>
+                         </button>`}
+                </div>
             `;
         } catch (err) {
             console.error(err);
             container.innerHTML = `<p style="color: var(--error-color);">Error loading product.</p>`;
         }
     });
-
-    async function addToCart(productId) {
-        const token = getCookie('token');
-        if (!token) {
-            alert("You must be logged in to add items to cart.");
-            return;
-        }
-
-        try {
-            const formData = new URLSearchParams();
-            formData.append('product_id', productId);
-            formData.append('quantity', 1);
-
-            const res = await fetch('/api/cart.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            const result = await res.json();
-            if (!res.ok) throw new Error(result.error || 'Failed to add item.');
-
-        } catch (err) {
-            console.error("Add to cart error:", err);
-            alert("Something went wrong. Try again.");
-        }
-    }
 </script>

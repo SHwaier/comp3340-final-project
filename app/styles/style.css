@@ -1,8 +1,7 @@
 /* =========================
    THEME VARIABLES
    ========================= */
-:root {
-	/* Default (Light Theme) */
+/* :root {
 	--bg-color: #ffffff;
 	--text-color: #222;
 	--secondary-text: #555;
@@ -12,7 +11,7 @@
 	--card-bg: #f9f9f9;
 	--input-bg: #f0f0f0;
 	--error-color: #e63946;
-}
+} */
 /* =========================
    THEME SWITCHER
    ========================= */
@@ -154,6 +153,45 @@ a:hover {
 .hover-underline-animation.left:hover::after {
 	transform-origin: bottom left;
 }
+/* buttons with the check-button class will display a checkmark upon clicking them */
+.check-button {
+	position: relative;
+	background-color: var(--accent-color);
+	color: var(--text-color);
+	overflow: hidden;
+}
+
+.check-button .checkmark {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: var(--accent-color);
+	color: var(--text-color);
+	font-size: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transform: scale(0.8);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	pointer-events: none;
+}
+
+.check-button .btn-text {
+	transition: opacity 0.2s ease;
+}
+
+.check-button.show-check .btn-text {
+	opacity: 0;
+}
+
+.check-button.show-check .checkmark {
+	opacity: 1;
+	transform: scale(1);
+}
+
 /* =========================
      CONTAINERS
      ========================= */
@@ -353,11 +391,13 @@ nav a {
 .product-card button,
 .button {
 	background-color: var(--accent-color);
-	color: white;
+	color: var(--text-color);
 	padding: 0.5rem 1rem;
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
+	transition: background-color 0.2s ease;
+	font-size: 0.95rem;
 }
 
 .product-card button:hover,

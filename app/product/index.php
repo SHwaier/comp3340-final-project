@@ -17,7 +17,7 @@ if (!is_numeric($product_id)) {
 </head>
 
 <body>
-    
+
     <?php include_once '../components/header.php'; ?>
     <main>
         <div class="container">
@@ -67,7 +67,7 @@ if (!is_numeric($product_id)) {
 
                     const product = data[0];
                     const isOutOfStock = product.stock_quantity == 0;
-                    const fallbackImage = '/assets/img/placeholder.png'; // fallback path
+                    const fallbackImage = '/assets/img/placeholder.png'; // fallback img 
 
                     document.getElementById('product-content').classList.remove('skeleton');
                     document.getElementById('product-content').innerHTML = `
@@ -84,10 +84,11 @@ if (!is_numeric($product_id)) {
 
                         ${isOutOfStock
                             ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                            : `<button style="padding: 0.75rem 1.5rem; background: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">
-                                    Add to Cart
-                               </button>`
-                        }
+                            : `<button class="check-button button" onclick="addToCart(${productId})">
+                                    <span class="checkmark">&#10003;</span>
+                                    <span class="btn-text">Add to Cart</span>
+                               </button>`}
+                        
                     </div>
                 </div>
             `;

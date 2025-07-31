@@ -68,7 +68,7 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-// updating cart items
+    // updating cart items
 } else if ($method === 'PUT') {
     parse_str(file_get_contents("php://input"), $data);
     $productId = $data['product_id'] ?? null;
@@ -98,7 +98,7 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-// removing products from cart
+    // removing products from cart
 } else if ($method === 'DELETE') {
     parse_str(file_get_contents("php://input"), $data);
     $productId = $data['product_id'] ?? null;
@@ -113,6 +113,7 @@ if ($method === 'POST') {
         $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = :user_id AND product_id = :product_id");
         $stmt->execute(['user_id' => $userId, 'product_id' => $productId]);
         echo json_encode(["message" => "Product removed from cart"]);
+        http_response_code(200);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);

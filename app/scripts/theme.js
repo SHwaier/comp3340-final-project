@@ -1,4 +1,4 @@
-window.onload = async function () {
+document.addEventListener('DOMContentLoaded', async function () {
     // For reference to what themes are available review the style.css file located inside the styles folder
     try {
         const res = await fetch('/api/theme.php');
@@ -18,10 +18,12 @@ window.onload = async function () {
                 document.documentElement.setAttribute("data-theme", "black-friday");
             else
                 document.documentElement.setAttribute("data-theme", "dark");
+            setThemeCache(themes.theme_id);
+
         }
     }
     catch (error) {
-        console.error("Error fetching theme:", error);
+        console.error("Error loading current theme:", error);
         // Fallback to default theme if fetch fails
         document.documentElement.setAttribute("data-theme", "dark");
     }
@@ -38,4 +40,13 @@ window.onload = async function () {
             logos[i].setAttribute('src', '/assets/logo/luxe-logo-dark.png');
         }
     }
-};
+});
+// super basic application client-side caching to avoid website loading then changing theme, should help with perceived performance lol, a trick I picked up from a random wordpress theme
+function setThemeCache(themeId) {
+    try {
+        localStorage.setItem('theme_id', themeId);
+    } catch (e) {
+        // localStorage might be disabled, fall back to cookie
+    }
+    document.cookie = `theme_id=${themeId}; path=/; max-age=31536000`; // 1 year
+}

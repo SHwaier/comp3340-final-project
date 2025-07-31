@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <?php include_once 'components/metas.php'; ?>
@@ -27,7 +27,7 @@
         <!-- Featured Products -->
         <section style="margin-top: 3rem;">
             <h2 style="font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">Featured Pieces</h2>
-            <div class="flex flex-row" style="gap:1rem;">
+            <div class="product-grid">
                 <?php
                 $featured = [1, 2, 3];
 

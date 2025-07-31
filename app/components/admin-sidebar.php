@@ -40,9 +40,10 @@ if (!$user || $user['role'] !== 'Admin') {
 
     <!-- Logo + Title -->
     <div class="flex flex-col items-center">
-        <a href="/">
-            <img src="/assets/logo/luxe-logo-light.png" alt="Luxe Logo" width="100" height="100" />
-        </a>
+        <div class="container">
+            <?php include_once 'logo.php'; ?>
+
+        </div>
         <h2 style="margin-top: 1rem; font-size: 1.2rem; color: var(--text-color);">Admin Panel</h2>
     </div>
 

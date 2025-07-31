@@ -9,9 +9,7 @@ $user = getSession();
         <button id="mobile-menu-toggle" aria-label="Toggle menu" style="background: none; border: none;">
             <img src="/assets/svg/menu.svg" alt="Menu Icon" width="30" height="30">
         </button>
-        <a href="/">
-            <img class="logo" src="/assets/logo/luxe-logo-light.png" alt="Luxe Logo" width="80" height="80">
-        </a>
+        <?php include_once 'logo.php'; ?>
     </div>
 
     <!-- Sidebar Menu -->

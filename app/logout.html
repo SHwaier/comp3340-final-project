@@ -11,7 +11,7 @@
     <script>
         // Force delete token cookie from JS too (in case PHP fails)
         document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; secure; samesite=strict";
-
+        localStorage.removeItem("token");
         // Redirect faster
         window.location.href = "/";
     </script>

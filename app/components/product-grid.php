@@ -32,10 +32,16 @@
                 </a>
                 <h2>${product.product_name}</h2>
                 <p>${product.description.slice(0, 100)}...</p>
-                <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
-                ${product.stock_quantity == 0
+                <div class="flex flex-row flex-space-between" style="align-items: center;">
+
+                    <div class="price">$${parseFloat(product.price).toFixed(2)}</div>
+                    ${product.stock_quantity == 0
                 ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                : `<button onclick="addToCart(${product.product_id})">Add to Cart</button>`}
+                : `<button class="check-button" onclick="addToCart(${product.product_id})">
+                            <span class="checkmark">&#10003;</span>
+                            <span class="btn-text">Add to Cart</span>
+                    </button>`}
+                    </div>
             </div>
         `).join('');
     }
