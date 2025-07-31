@@ -59,39 +59,78 @@ if (!is_numeric($product_id)) {
         } else {
             fetch(`/api/products.php?id=${productId}`)
                 .then(res => res.json())
-                .then(data => {
-                    if (!Array.isArray(data) || data.length === 0) {
+                .then(product => {
+                    if (!product || !product.product_id) {
                         document.getElementById('product-content').innerHTML = `<p style="color: var(--error-color);">❌ Product not found.</p>`;
                         return;
                     }
 
-                    const product = data[0];
-                    const isOutOfStock = product.stock_quantity == 0;
-                    const fallbackImage = '/assets/img/placeholder.png'; // fallback img 
+                    const fallbackImage = '/assets/img/placeholder.png';
+                    const basePrice = parseFloat(product.price).toFixed(2);
+                    const sizes = product.variants.map(v => v.size);
+                    const uniqueSizes = [...new Set(sizes)];
+
+                    const sizeOptions = uniqueSizes.map(size => `<option value="${size}">${size}</option>`).join('');
 
                     document.getElementById('product-content').classList.remove('skeleton');
                     document.getElementById('product-content').innerHTML = `
-                <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
-                    <div style="flex: 1 1 300px;">
-                        <img src="${product.image_url}" alt="${product.product_name}"
-                             onerror="this.onerror=null;this.src='${fallbackImage}'"
-                             style="width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                    </div>
-                    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 1.2rem;">
-                        <h1 style="font-size: 2rem;">${product.product_name}</h1>
-                        <p style="font-size: 1.25rem; font-weight: bold;">$${parseFloat(product.price).toFixed(2)}</p>
-                        <p style="font-size: 1rem; line-height: 1.6;">${product.description}</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                        <div style="flex: 1 1 300px;">
+                            <img src="${product.image_url}" alt="${product.product_name}"
+                                 onerror="this.onerror=null;this.src='${fallbackImage}'"
+                                 style="width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        </div>
+                        <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 1.2rem;">
+                            <h1 style="font-size: 2rem;">${product.product_name}</h1>                            
+                            <p id="price" style="font-size: 1.25rem; font-weight: bold;">$${basePrice}</p>
+                            <div>
+                                <label for="size-select" style="font-weight: bold;">Size:</label>
+                                <select id="size-select" style="margin-left: 0.5rem;">${sizeOptions}</select>
+                                <p id="addon-price-msg" style="margin-top: 0.5rem; color: var(--success-color); display: none;"></p>
+                            </div>
+                            <p style="font-size: 1rem; line-height: 1.6;">${product.description}</p>
 
-                        ${isOutOfStock
-                            ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                            : `<button class="check-button button" onclick="addToCart(${productId})">
-                                    <span class="checkmark">&#10003;</span>
-                                    <span class="btn-text">Add to Cart</span>
-                               </button>`}
-                        
+                            <button class="check-button button" id="add-to-cart-button">
+                                <span class="checkmark">&#10003;</span>
+                                <span class="btn-text">Add to Cart</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+
+                    // Store for later lookup
+                    window.currentProduct = product;
+
+                    document.getElementById('size-select').addEventListener('change', () => {
+                        const selectedSize = document.getElementById('size-select').value;
+                        const variant = product.variants.find(v => v.size === selectedSize);
+                        const total = (parseFloat(product.price) + parseFloat(variant.addon_price)).toFixed(2);
+                        document.getElementById('price').innerText = `$${total}`;
+
+                        const msgEl = document.getElementById('addon-price-msg');
+                        if (variant.addon_price > 0) {
+                            msgEl.style.display = 'block';
+                            msgEl.textContent = `+ $${parseFloat(variant.addon_price).toFixed(2)} for this size`;
+                        } else {
+                            msgEl.style.display = 'none';
+                            msgEl.textContent = '';
+                        }
+                    });
+                    document.getElementById('add-to-cart-button').addEventListener('click', () => {
+                        const selectedSize = document.getElementById('size-select').value;
+                        const product = window.currentProduct;
+                        const variant = product.variants.find(v => v.size === selectedSize);
+
+                        if (!variant) {
+                            alert("Please select a valid size.");
+                            return;
+                        }
+
+                        addToCart(product.product_id, variant.variant_id);
+                    });
+
+                    // Trigger price update on first render
+                    document.getElementById('size-select').dispatchEvent(new Event('change'));
                 })
                 .catch(err => {
                     document.getElementById('product-content').innerHTML = `<p style="color: var(--error-color);">Error loading product.</p>`;
@@ -99,7 +138,31 @@ if (!is_numeric($product_id)) {
                 });
         }
 
+        function addToCart(productId) {
+            const product = window.currentProduct;
+            const selectedSize = document.getElementById('size-select').value;
+            const variant = product.variants.find(v => v.size === selectedSize);
+
+            if (!variant) {
+                alert("Please select a valid size.");
+                return;
+            }
+
+            fetch('/api/cart.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ variant_id: variant.variant_id, quantity: 1 })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Added to cart:", data);
+                })
+                .catch(err => {
+                    console.error("Cart error:", err);
+                });
+        }
     </script>
+
 
 </body>
 

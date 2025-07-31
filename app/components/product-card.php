@@ -12,12 +12,6 @@
 </div>
 
 <script>
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
     document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('product-card-<?= $product_id ?>');
         if (!container) return;
@@ -32,9 +26,14 @@
                 return;
             }
 
-            const img = "/product/" + product.image_url || '/assets/img/placeholder.png';
+            const img = "/product/" + (product.image_url || 'placeholder.png');
             const outOfStock = product.stock_quantity == 0;
-            const price = parseFloat(product.price).toFixed(2);
+            const basePrice = parseFloat(product.price).toFixed(2);
+
+            const variants = product.variants || [];
+            const variantOptions = variants.map(v =>
+                `<option value="${v.variant_id}">${v.size} ${v.addon_price > 0 ? `(+ $${parseFloat(v.addon_price).toFixed(2)})` : ''}</option>`
+            ).join('');
 
             container.innerHTML = `
                 <a href="/product?id=${product.product_id}">
@@ -44,16 +43,29 @@
                 </a>
                 <h2>${product.product_name}</h2>
                 <p>${product.description.slice(0, 100)}...</p>
-                <div class="flex flex-row flex-space-between" style="align-items: center;">
-                     <div class="price">$${price}</div>
-                     ${outOfStock
-                    ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                    : `<button class="check-button" onclick="addToCart(${product.product_id})">
-                             <span class="checkmark">&#10003;</span>
-                             <span class="btn-text">Add to Cart</span>
-                         </button>`}
-                </div>
+                <div class="price">$${basePrice}</div>
+                ${!outOfStock && variants.length > 0 ? `
+                    <div style="margin: 0.5rem 0;">
+                        <select id="variant-select-${product.product_id}" style="width: 100%; padding: 0.4rem;">
+                            ${variantOptions}
+                        </select>
+                    </div>
+                    <button class="check-button" onclick="handleVariantCart(${product.product_id})">
+                        <span class="checkmark">&#10003;</span>
+                        <span class="btn-text">Add to Cart</span>
+                    </button>
+                ` : `<span style="color: red; font-weight: bold;">Out of Stock</span>`}
             `;
+
+            window[`handleVariantCart`] = function (productId) {
+                const select = document.getElementById(`variant-select-${productId}`);
+                const variantId = select?.value;
+                if (!variantId) {
+                    alert("Please select a variant.");
+                    return;
+                }
+                addToCart(productId, variantId);
+            };
         } catch (err) {
             console.error(err);
             container.innerHTML = `<p style="color: var(--error-color);">Error loading product.</p>`;

@@ -24,25 +24,54 @@ try {
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    // Handle GET Request - Retrieve All User Profiles
     $product_id = $_GET['id'] ?? null;
 
     try {
         if (is_numeric($product_id)) {
+            // Fetch single product
             $stmt = $pdo->prepare("SELECT product_id, product_name, description, price, stock_quantity, image_url FROM products WHERE product_id = :id");
             $stmt->bindParam(':id', $product_id);
+            $stmt->execute();
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$product) {
+                echo json_encode([]);
+                exit;
+            }
+
+            // Fetch size variants for the product
+            $variantStmt = $pdo->prepare("SELECT variant_id, size, stock_quantity, addon_price FROM product_variants WHERE product_id = :id");
+            $variantStmt->bindParam(':id', $product_id);
+            $variantStmt->execute();
+            $variants = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $product['variants'] = $variants;
+
+            echo json_encode($product, JSON_PRETTY_PRINT);
         } else {
+            // Fetch all products
             $stmt = $pdo->prepare("SELECT product_id, product_name, description, price, stock_quantity, image_url FROM products");
-        }
-        $stmt->execute();
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // Check if the results are empty and return an empty array
-        if (empty($results)) {
-            echo json_encode([]);
-            exit;
+            $stmt->execute();
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Fetch all variants
+            $variantStmt = $pdo->query("SELECT variant_id, product_id, size, addon_price FROM product_variants");
+            $allVariants = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group variants by product_id
+            $variantsByProduct = [];
+            foreach ($allVariants as $variant) {
+                $variantsByProduct[$variant['product_id']][] = $variant;
+            }
+
+            // Attach variants to corresponding products
+            foreach ($products as &$product) {
+                $product['variants'] = $variantsByProduct[$product['product_id']] ?? [];
+            }
+
+            echo json_encode($products, JSON_PRETTY_PRINT);
         }
 
-        echo json_encode($results, JSON_PRETTY_PRINT);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);

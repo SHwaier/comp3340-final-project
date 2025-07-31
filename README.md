@@ -93,10 +93,12 @@ JavaScript used across the frontend:
 
 | File              | Description |
 |-------------------|-------------|
-| `app.js`          | Auth token checks, dynamic UI toggling (header/user/menu) |
+| `app.js`          | dynamic UI toggling (header/user/menu) and any general frontend js needs |
 | `login.js`        | Handles login form submission and token storage |
 | `register.js`     | Validates and submits registration form, auto-logins |
-| `theme.js`        | Handles theme switching using `data-theme` |
+| `theme.js`        | Handles theme switching using `data-theme` and backend API endpoints `api/theme.php` and `api/themes.php` |
+| `addToCart.js`    | Handles the logic for adding and sending post requests to add items to the user's cart | 
+| `cart.js`         | Handles the cart logic to delete and change item quantity | 
 
 ---
 
@@ -122,6 +124,9 @@ All data is fetched dynamically via RESTful APIs under `/api/`, with `Bearer` JW
 - `PUT /api/cart.php` – Update quantity
 - `DELETE /api/cart.php` – Remove item
 - `GET /api/auth/getSession.php` – Validate logged-in user on frontend
+- `GET /api/themes.php` – Returns all available themes and their ID
+- `GET /api/theme.php` – Returns the theme ID of the active theme
+- `PUT /api/theme.php` – Updates the active theme to a different one
 - More would have been implemented if I had another day
 ---
 
@@ -130,11 +135,15 @@ All data is fetched dynamically via RESTful APIs under `/api/`, with `Bearer` JW
 - Theme controlled via `data-theme` on `<html>`
 - Switch options: `light`, `dark`, `black-friday`
 - User's preference is saved in `cookie`
+- Active theme is fetched from the DB on load 
+- Theme can be changed by going to `/admin/settings` and changing it through the dropdown list: NOTE ONLY ADMINS CAN CHANGE IT
 
 ---
 
 ## 💡 Notes
 
 - Responsive design: header/nav/footer adjusts to mobile/tablet/desktop
-- Componentized and DRY-friendly (e.g., product cards reused everywhere)
-- Secure auth and cart logic through JWT and proper checks
+- Componentized (e.g., product cards reused everywhere)
+- Secure authentication through JWT, salting and hashing: SHA256
+- Authorization roles implemented users can be either customers by default or admins
+- Only admins can visit `/admin` and any of it's subpages
