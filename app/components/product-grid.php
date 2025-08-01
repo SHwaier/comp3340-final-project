@@ -101,7 +101,7 @@
             alert("Please select a variant.");
             return;
         }
-        addToCart(productId, variantId);
+        addToCart(variantId);
     };
 
     function sortProducts(criteria) {

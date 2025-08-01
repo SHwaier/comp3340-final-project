@@ -44,17 +44,7 @@ if ($method === 'POST') {
 
     try {
         // Get product_id from variant
-        $variantQuery = $pdo->prepare("SELECT product_id FROM product_variants WHERE variant_id = :variant_id");
-        $variantQuery->execute(['variant_id' => $variantId]);
-        $variantData = $variantQuery->fetch(PDO::FETCH_ASSOC);
 
-        if (!$variantData) {
-            http_response_code(404);
-            echo json_encode(["error" => "Variant not found"]);
-            exit;
-        }
-
-        $productId = $variantData['product_id'];
 
         $stmt = $pdo->prepare("SELECT quantity FROM cart WHERE user_id = :user_id AND variant_id = :variant_id");
         $stmt->execute(['user_id' => $userId, 'variant_id' => $variantId]);
@@ -69,10 +59,9 @@ if ($method === 'POST') {
                 'variant_id' => $variantId
             ]);
         } else {
-            $insert = $pdo->prepare("INSERT INTO cart (user_id, product_id, variant_id, quantity) VALUES (:user_id, :product_id, :variant_id, :quantity)");
+            $insert = $pdo->prepare("INSERT INTO cart (user_id, variant_id, quantity) VALUES (:user_id, :variant_id, :quantity)");
             $insert->execute([
                 'user_id' => $userId,
-                'product_id' => $productId,
                 'variant_id' => $variantId,
                 'quantity' => $quantity
             ]);
@@ -116,20 +105,29 @@ if ($method === 'POST') {
 
 } elseif ($method === 'DELETE') {
     $data = json_decode(file_get_contents("php://input"), true);
-    $productId = $data['product_id'] ?? null;
     $variantId = $data['variant_id'] ?? null;
 
-    if (!$productId || !$variantId) {
+    if (!$variantId) {
         http_response_code(400);
-        echo json_encode(["error" => "Missing product ID or variant ID"]);
+        echo json_encode(["error" => "Missing variant ID"]);
         exit;
     }
 
+    $stmt = $pdo->prepare("SELECT * FROM cart WHERE user_id = :user_id AND variant_id = :variant_id");
+    $stmt->execute([
+        'user_id' => $userId,
+        'variant_id' => $variantId
+    ]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$item) {
+        http_response_code(404);
+        echo json_encode(["error" => "Item not found in cart"]);
+        exit;
+    }
     try {
-        $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = :user_id AND product_id = :product_id AND variant_id = :variant_id");
+        $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = :user_id  AND variant_id = :variant_id");
         $stmt->execute([
             'user_id' => $userId,
-            'product_id' => $productId,
             'variant_id' => $variantId
         ]);
         echo json_encode(["message" => "Item removed from cart"]);
@@ -143,7 +141,6 @@ if ($method === 'POST') {
         $stmt = $pdo->prepare("
             SELECT 
                 c.cart_id,
-                c.product_id,
                 c.variant_id,
                 c.quantity,
                 p.product_name,
@@ -153,8 +150,8 @@ if ($method === 'POST') {
                 v.addon_price,
                 (p.price + v.addon_price) AS final_price
             FROM cart c
-            JOIN products p ON c.product_id = p.product_id
             JOIN product_variants v ON c.variant_id = v.variant_id
+            JOIN products p ON v.product_id = p.product_id
             WHERE c.user_id = :user_id
         ");
         $stmt->execute(['user_id' => $userId]);

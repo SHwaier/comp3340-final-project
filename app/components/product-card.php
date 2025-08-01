@@ -64,7 +64,7 @@
                     alert("Please select a variant.");
                     return;
                 }
-                addToCart(productId, variantId);
+                addToCart(variantId);
             };
         } catch (err) {
             console.error(err);

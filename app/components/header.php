@@ -19,7 +19,7 @@ $user = getSession();
             <ul class="flex flex-col" style="gap: 1.5rem;">
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
-                <li><a href="/shop">Products</a></li>
+                <li><a href="/shop">Shop</a></li>
                 <li><a href="/contact">Contact</a></li>
                 <?php if ($user !== null) { ?>
                     <li><a href="/cart">Cart</a></li>
@@ -49,7 +49,7 @@ $user = getSession();
             <ul class="flex flex-center">
                 <li><a class="hover-underline-animation left" href="/">Home</a></li>
                 <li><a class="hover-underline-animation left" href="/about">About</a></li>
-                <li><a class="hover-underline-animation left" href="/shop">shop</a></li>
+                <li><a class="hover-underline-animation left" href="/shop">Shop</a></li>
                 <li><a class="hover-underline-animation left" href="/contact">Contact</a></li>
             </ul>
         </nav>

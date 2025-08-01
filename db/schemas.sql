@@ -38,13 +38,11 @@ CREATE TABLE product_variants (
 CREATE TABLE IF NOT EXISTS cart (
     cart_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    product_id INT,
     variant_id INT,
     quantity INT NOT NULL,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id) ON DELETE CASCADE
 );
 
 -- Themes Table

@@ -4,7 +4,7 @@ function getCookie(name) {
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-async function addToCart(productId, variantId) {
+async function addToCart(variantId) {
     const token = getCookie('token');
     if (!token) {
         alert("You must be logged in to add items to cart.");
@@ -12,7 +12,7 @@ async function addToCart(productId, variantId) {
     }
 
     if (!variantId) {
-        alert("Missing variant ID.");
+        alert("Missing variant ID.\n variantId: " + variantId);
         return;
     }
 
@@ -24,7 +24,6 @@ async function addToCart(productId, variantId) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                product_id: productId,
                 variant_id: variantId,
                 quantity: 1
             })
