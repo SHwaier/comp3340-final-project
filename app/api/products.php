@@ -14,27 +14,131 @@ if ($method === 'GET') {
     $product_id = $_GET['id'] ?? null;
 
     try {
-        if (is_numeric($product_id)) {
-            // Fetch single product
-            $stmt = $pdo->prepare("SELECT product_id, product_name, description, price, stock_quantity, image_url FROM products WHERE product_id = :id");
-            $stmt->bindParam(':id', $product_id);
-            $stmt->execute();
-            $product = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($method === 'GET') {
+            // Supported query parameters
+            $product_id = $_GET['id'] ?? null;          // Single product ID
+            $ids = $_GET['ids'] ?? null;                // Comma-separated list of product IDs
+            $latest = $_GET['latest'] ?? null;          // Fetch latest N products
+            $all = isset($_GET['all']) && $_GET['all'] === 'true'; // Fetch all products
 
-            if (!$product) {
-                echo json_encode([]);
-                exit;
+            try {
+                // --- 1. Single Product by ID ---
+                if (is_numeric($product_id)) {
+                    // Fetch one product's base info
+                    $stmt = $pdo->prepare("
+                SELECT product_id, product_name, description, price, stock_quantity, image_url 
+                FROM products 
+                WHERE product_id = :id
+            ");
+                    $stmt->bindParam(':id', $product_id);
+                    $stmt->execute();
+                    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$product) {
+                        echo json_encode([]);
+                        exit;
+                    }
+
+                    // Fetch size variants for that product
+                    $variantStmt = $pdo->prepare("
+                SELECT variant_id, size, stock_quantity, addon_price 
+                FROM product_variants 
+                WHERE product_id = :id
+            ");
+                    $variantStmt->bindParam(':id', $product_id);
+                    $variantStmt->execute();
+                    $product['variants'] = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    echo json_encode($product, JSON_PRETTY_PRINT);
+                    exit;
+                }
+
+                // --- 2. Multiple Products by IDs ---
+                elseif (!empty($ids)) {
+                    // Convert string "1,2,3" to array [1,2,3]
+                    $idArray = array_filter(array_map('intval', explode(',', $ids)));
+                    if (empty($idArray)) {
+                        echo json_encode([]);
+                        exit;
+                    }
+
+                    // Prepare dynamic placeholders (?, ?, ?)
+                    $placeholders = implode(',', array_fill(0, count($idArray), '?'));
+                    $stmt = $pdo->prepare("SELECT * FROM products WHERE product_id IN ($placeholders)");
+                    $stmt->execute($idArray);
+                    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    // Attach variants to each product
+                    foreach ($products as &$product) {
+                        $variantStmt = $pdo->prepare("
+                    SELECT variant_id, size, stock_quantity, addon_price 
+                    FROM product_variants 
+                    WHERE product_id = ?
+                ");
+                        $variantStmt->execute([$product['product_id']]);
+                        $product['variants'] = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+                    }
+
+                    echo json_encode($products, JSON_PRETTY_PRINT);
+                    exit;
+                }
+
+                // --- 3. Latest N Products ---
+                elseif (is_numeric($latest)) {
+                    $limit = (int) $latest;
+
+                    // Order by newest product_id (descending) and limit
+                    $stmt = $pdo->prepare("SELECT * FROM products ORDER BY product_id DESC LIMIT ?");
+                    $stmt->bindParam(1, $limit, PDO::PARAM_INT);
+                    $stmt->execute();
+                    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    // Attach variants to each product
+                    foreach ($products as &$product) {
+                        $variantStmt = $pdo->prepare("
+                    SELECT variant_id, size, stock_quantity, addon_price 
+                    FROM product_variants 
+                    WHERE product_id = ?
+                ");
+                        $variantStmt->execute([$product['product_id']]);
+                        $product['variants'] = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+                    }
+
+                    echo json_encode($products, JSON_PRETTY_PRINT);
+                    exit;
+                }
+
+                // --- 4. All Products ---
+                elseif ($all) {
+                    // Fetch every product
+                    $stmt = $pdo->query("SELECT * FROM products ORDER BY product_id DESC");
+                    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    // Attach variants to each product
+                    foreach ($products as &$product) {
+                        $variantStmt = $pdo->prepare("
+                    SELECT variant_id, size, stock_quantity, addon_price 
+                    FROM product_variants 
+                    WHERE product_id = ?
+                ");
+                        $variantStmt->execute([$product['product_id']]);
+                        $product['variants'] = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
+                    }
+
+                    echo json_encode($products, JSON_PRETTY_PRINT);
+                    exit;
+                }
+
+                // --- 5. No valid parameters ---
+                else {
+                    echo json_encode([]); // Return empty array
+                    exit;
+                }
+
+            } catch (Exception $e) {
+                // Catch any unexpected errors
+                error_respond(500, $e->getMessage());
             }
-
-            // Fetch size variants for the product
-            $variantStmt = $pdo->prepare("SELECT variant_id, size, stock_quantity, addon_price FROM product_variants WHERE product_id = :id");
-            $variantStmt->bindParam(':id', $product_id);
-            $variantStmt->execute();
-            $variants = $variantStmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $product['variants'] = $variants;
-
-            echo json_encode($product, JSON_PRETTY_PRINT);
         } else {
             // Fetch all products
             $stmt = $pdo->prepare("SELECT product_id, product_name, description, price, stock_quantity, image_url FROM products");

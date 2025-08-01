@@ -21,77 +21,72 @@
         if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
-    async function addToCart(productId, variantId) {
-        const token = getCookie('token');
-        if (!token) {
-            alert("You must be logged in to add items to cart.");
-            return;
-        }
-
-        try {
-            const formData = new URLSearchParams();
-            formData.append('product_id', productId);
-            formData.append('variant_id', variantId);
-            formData.append('quantity', 1);
-
-            const res = await fetch('/api/cart.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-
-            const result = await res.json();
-            if (!res.ok) throw new Error(result.error || 'Failed to add item.');
-        } catch (err) {
-            console.error("Add to cart error:", err);
-            alert("Something went wrong. Try again.");
-        }
-    }
-
     function renderProducts(data) {
         const container = document.getElementById('product-grid');
-        container.innerHTML = data.map(product => {
-            const price = parseFloat(product.price).toFixed(2);
-            const variants = product.variants || [];
+        container.innerHTML = '';
 
-            const variantOptions = variants.map(v => `
-                <option value="${v.variant_id}">
-                    ${v.size}${v.addon_price > 0 ? ` (+$${parseFloat(v.addon_price).toFixed(2)})` : ''}
-                </option>`).join('');
+        const fragment = document.createDocumentFragment();
 
-            const variantSelect = variants.length > 0
-                ? `<select id="variant-select-${product.product_id}" style="margin: 0.5rem 0; width: 100%;">${variantOptions}</select>`
-                : '';
+        data.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
 
-            const addToCartButton = variants.length > 0
-                ? `<button class="check-button" onclick="handleVariantCart(${product.product_id})">
-                        <span class="checkmark">&#10003;</span>
-                        <span class="btn-text">Add to Cart</span>
-                   </button>`
-                : `<span style="color: red; font-weight: bold;">No Variants</span>`;
+            const img = document.createElement('img');
+            img.src = `/product/${product.image_url || 'placeholder.png'}`;
+            img.alt = product.product_name;
+            img.onerror = () => img.src = '/assets/img/placeholder.png';
+            img.loading = 'lazy';
 
-            return `
-                <div class="product-card">
-                    <a href="/product?id=${product.product_id}">
-                        <img src="${"/product/" + product.image_url || '/assets/img/placeholder.png'}"
-                            alt="${product.product_name}"
-                            onerror="this.onerror=null;this.src='/assets/img/placeholder.png';">
-                    </a>
-                    <h2>${product.product_name}</h2>
-                    <p>${product.description.slice(0, 100)}...</p>
-                    <div class="price">$${price}</div>
-                    ${product.stock_quantity == 0
-                    ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
-                    : `
-                        ${variantSelect}
-                        ${addToCartButton}
-                    `}
-                </div>
-            `;
-        }).join('');
+            const link = document.createElement('a');
+            link.href = `/product?id=${product.product_id}`;
+            link.appendChild(img);
+
+            const name = document.createElement('h2');
+            name.textContent = product.product_name;
+
+            const desc = document.createElement('p');
+            desc.textContent = product.description.slice(0, 100) + '...';
+
+            const price = document.createElement('div');
+            price.className = 'price';
+            price.textContent = `$${parseFloat(product.price).toFixed(2)}`;
+
+            card.appendChild(link);
+            card.appendChild(name);
+            card.appendChild(desc);
+            card.appendChild(price);
+
+            if (product.stock_quantity === 0) {
+                const out = document.createElement('span');
+                out.textContent = 'Out of Stock';
+                out.style.color = 'red';
+                out.style.fontWeight = 'bold';
+                card.appendChild(out);
+            } else if (product.variants?.length > 0) {
+                const select = document.createElement('select');
+                select.id = `variant-select-${product.product_id}`;
+                select.style.cssText = 'margin: 0.5rem 0; width: 100%';
+
+                product.variants.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.variant_id;
+                    option.textContent = `${v.size}${v.addon_price > 0 ? ` (+$${parseFloat(v.addon_price).toFixed(2)})` : ''}`;
+                    select.appendChild(option);
+                });
+
+                const btn = document.createElement('button');
+                btn.className = 'check-button';
+                btn.innerHTML = `<span class="checkmark">&#10003;</span><span class="btn-text">Add to Cart</span>`;
+                btn.onclick = () => handleVariantCart(product.product_id);
+
+                card.appendChild(select);
+                card.appendChild(btn);
+            }
+
+            fragment.appendChild(card);
+        });
+
+        container.appendChild(fragment);
     }
 
     window.handleVariantCart = function (productId) {
@@ -128,10 +123,11 @@
         sortProducts(e.target.value);
     });
 
-    fetch('/api/products.php')
+    fetch('/api/products.php?all=true')
         .then(res => res.json())
         .then(data => {
             products = data;
             renderProducts(products);
         });
+
 </script>
