@@ -1,11 +1,11 @@
 <!-- Sort Dropdown -->
-<div class="flex flex-row" style="margin-bottom: 1rem;">
-    <label for="sort-select" style="margin-right: 0.5rem;">Sort by:</label>
+<div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5rem; margin-bottom: 1rem; align-items: center;">
+    <label for="sort-select">Sort by:</label>
     <select id="sort-select">
         <option value="default">Default</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
-        <option value="name-asc">Alphabetical (A–Z)</option>
+        <option value="name-asc">Alphabetical (A-Z)</option>
     </select>
 </div>
 

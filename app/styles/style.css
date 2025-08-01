@@ -402,6 +402,7 @@ nav a {
 
 .product-card button:hover,
 .button:hover {
+	color: var(--text-color);
 	background-color: var(--accent-hover);
 }
 
@@ -461,6 +462,15 @@ select:focus {
 .footer-container h4 {
 	margin-bottom: 0.5rem;
 	font-size: 1.1rem;
+}
+/* CTA BANNER */
+.cta-banner {
+	margin-top: 4rem;
+	background: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 12px;
+	padding: 2rem;
+	text-align: center;
 }
 
 /* mobile devices */
