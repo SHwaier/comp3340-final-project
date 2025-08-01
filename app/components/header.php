@@ -22,7 +22,7 @@ $user = getSession();
                 <li><a href="/shop">Shop</a></li>
                 <li><a href="/contact">Contact</a></li>
                 <?php if ($user !== null) { ?>
-                    <li><a href="/cart">Cart</a></li>
+                    <li><a href="/cart/">Cart</a></li>
                     <li><a href="/profile">Profile</a></li>
                     <li><a href="/logout">Logout</a></li>
                 <?php } else { ?>
@@ -58,7 +58,7 @@ $user = getSession();
 
         <?php if ($user !== null) { ?>
             <div class="flex flex-row flex-space-between" style="gap: 1rem;">
-                <a class="hover-underline-animation left" href="/cart">
+                <a class="hover-underline-animation left" href="/cart/">
                     <img class="cart-icon icon" src="/assets/svg/cart.svg" alt="Cart Icon" width="30" height="30">
                 </a>
                 <div class="user-menu-wrapper">

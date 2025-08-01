@@ -4,24 +4,13 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 require_once './util.php';
-
-$db_host = getenv('DATABASE_HOST');
-$db_user = getenv('DATABASE_USER');
-$db_pass = getenv('DATABASE_PASS');
-$db_name = getenv('DATABASE_NAME');
-
-try {
-    // Establish a connection using PDO (PHP Data Objects)
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8", $db_user, $db_pass);
-    // Set error reporting to Exception for easier debugging
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    // If connection fails, output the error message and exit
-    die("Connection failed: " . $e->getMessage());
-}
+require_once 'auth/authorize.php';
+require_once 'db.php';
 
 
 $method = $_SERVER['REQUEST_METHOD'];
+// retrieve db connection
+$pdo = getPDO();
 
 if ($method === 'GET') {
     // Handle GET Request - Retrieve All User Profiles

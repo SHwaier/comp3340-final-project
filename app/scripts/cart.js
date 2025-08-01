@@ -6,7 +6,7 @@ function getCookie(name) {
 }
 
 const token = getCookie('token');
-
+cartItems = null;
 async function fetchCart() {
     const cartContainer = document.getElementById('cart-items');
     const summaryContainer = document.getElementById('cart-summary');
@@ -29,7 +29,7 @@ async function fetchCart() {
             summaryContainer.innerHTML = '';
             return;
         }
-
+        cartItems = items;
         let total = 0;
         cartContainer.innerHTML = '<div class="product-grid"></div>';
         const grid = cartContainer.querySelector('.product-grid');
@@ -38,6 +38,7 @@ async function fetchCart() {
             total += item.final_price * item.quantity;
 
             const card = document.createElement('div');
+            card.id = `item-card-${item.variant_id}`;
             card.className = 'cart-item-card';
 
             card.innerHTML = `
@@ -54,17 +55,17 @@ async function fetchCart() {
 
                         <div class="flex flex-wrap flex-space-between w-full" style="gap: 1rem; align-items: center;">
                             <div class="flex flex-row gap-1" style="align-items: center;">
-                                <label for="qty-${item.product_id}-${item.variant_id}" style="font-size: 0.9rem;">Quantity:</label>
-                                <input type="number" id="qty-${item.product_id}-${item.variant_id}" value="${item.quantity}" min="0"
+                                <label for="qty-${item.variant_id}" style="font-size: 0.9rem;">Quantity:</label>
+                                <input type="number" id="qty-${item.variant_id}" value="${item.quantity}" min="0"
                                        style="width: 60px; padding: 0.4rem; font-size: 0.9rem;" />
                             </div>
                             <p class="price" style="font-weight: bold; font-size: 1rem; color: var(--accent-color); margin: 0;">
-                                $<span id="total-${item.product_id}-${item.variant_id}">${(item.final_price * item.quantity).toFixed(2)}</span>
+                                $<span id="total-${item.variant_id}">${(item.final_price * item.quantity).toFixed(2)}</span>
                             </p>
                         </div>
 
                         <div style="text-align: right;">
-                            <button onclick="removeItem(${item.product_id}, ${item.variant_id})"
+                            <button onclick="removeItem(${item.variant_id})"
                                     style="background-color: red; color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
                                 Remove
                             </button>
@@ -73,10 +74,10 @@ async function fetchCart() {
                 </div>
             `;
 
-            card.querySelector(`#qty-${item.product_id}-${item.variant_id}`).addEventListener('change', e => {
+            card.querySelector(`#qty-${item.variant_id}`).addEventListener('change', e => {
                 const newQty = parseInt(e.target.value);
                 if (isNaN(newQty) || newQty < 0) return;
-                updateQuantity(item.product_id, item.variant_id, newQty, item.final_price);
+                updateQuantity(item.variant_id, newQty, item.final_price);
             });
 
             grid.appendChild(card);
@@ -88,8 +89,8 @@ async function fetchCart() {
     }
 }
 
-async function updateQuantity(productId, variantId, quantity, unitPrice) {
-    const input = document.getElementById(`qty-${productId}-${variantId}`);
+async function updateQuantity(variantId, quantity, unitPrice) {
+    const input = document.getElementById(`qty-${variantId}`);
     input.disabled = true;
 
     try {
@@ -99,20 +100,24 @@ async function updateQuantity(productId, variantId, quantity, unitPrice) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ product_id: productId, variant_id: variantId, quantity })
+            body: JSON.stringify({ variant_id: variantId, quantity })
         });
 
         if (!res.ok) throw new Error();
-        document.getElementById(`total-${productId}-${variantId}`).textContent = (unitPrice * quantity).toFixed(2);
-        await fetchCart();
+        updateItemQuantity(variantId, quantity);
+        if (quantity < 1) {
+            removeItemFromDOM(variantId);
+            return;
+        }
+        document.getElementById(`total-${variantId}`).textContent = "$" + (unitPrice * quantity).toFixed(2);
     } catch (err) {
         alert("Failed to update cart. Try again.");
     } finally {
         input.disabled = false;
     }
 }
-
-async function removeItem(productId, variantId) {
+// sends the request to remove the item from the cart to the backend
+async function removeItem(variantId) {
     try {
         const res = await fetch('/api/cart.php', {
             method: 'DELETE',
@@ -120,15 +125,53 @@ async function removeItem(productId, variantId) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ product_id: productId, variant_id: variantId })
+            body: JSON.stringify({ variant_id: variantId })
         });
 
         const data = await res.json();
         if (!res.ok || !data.message) throw new Error(data.error || 'Failed to remove item.');
-        await fetchCart();
+        removeItemFromDOM(variantId);
     } catch (err) {
         alert("Failed to remove item.");
     }
 }
 
+// removes the item from the DOM and updates the cart summary
+function removeItemFromDOM(variantId) {
+    //  Remove the item card from the DOM
+    const itemCard = document.getElementById("item-card-" + variantId);
+    if (itemCard) {
+        itemCard.remove();
+    }
+    // Remove the item from the cartItems array
+    cartItems = cartItems.filter(item => item.variant_id !== variantId);
+    // anytime an item is removed, we need to update the cart summary price
+    updateCartSummary();
+}
+// updatest the UI for the cart summary subtotal price
+function updateCartSummary() {
+    const summaryContainer = document.getElementById('cart-summary');
+    if (!cartItems || cartItems.length === 0) {
+        summaryContainer.innerHTML = '<h3>Subtotal: $0.00</h3>';
+        return;
+    }
+    const total = getTotalPrice();
+    summaryContainer.innerHTML = `<h3>Subtotal: $${total.toFixed(2)}</h3>`;
+}
+// helper function to calculate the total price of all items in the cart
+function getTotalPrice() {
+    if (!cartItems || cartItems.length === 0) return 0;
+
+    return cartItems.reduce((total, item) => total + (item.final_price * item.quantity), 0); // Calculate total price from cart items
+}
+// updates the quantity of an item in the cart item array and updates the substotal price by calling updateCartSummary
+function updateItemQuantity(variantId, quantity) {
+    // Find the item in the cartItems array and update its quantity to the new value
+    cartItems.forEach(item => {
+        if (item.variant_id === variantId) {
+            item.quantity = quantity;
+        }
+    });
+    updateCartSummary();
+}
 document.addEventListener('DOMContentLoaded', fetchCart);

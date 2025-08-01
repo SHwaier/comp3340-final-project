@@ -16,23 +16,55 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const usernamePattern = /^[a-zA-Z0-9_]{3,20}$/;
     const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
-    // Validate
-    if (!emailPattern.test(email)) {
+
+
+    // START OF EMAIL CHECK
+    errorMsg.textContent = '';
+    errorMsg.style.display = 'none';
+
+    if (!email) {
+        errorMsg.textContent = "Email cannot be empty.";
+    } else if (email.length > 100) {
+        errorMsg.textContent = "Email must not exceed 100 characters.";
+    } else if (/[\r\n]/.test(email)) {
+        errorMsg.textContent = "Email cannot contain line breaks.";
+    } else if (!emailPattern.test(email)) {
         errorMsg.textContent = "Invalid email format.";
-        errorMsg.style.display = "block";
-        return;
     }
+    // END OF EMAIL CHECK
+
+    // START OF PASSWORD CHECK
+    if (password.length < 8) {
+        errorMsg.textContent = "Password must be at least 8 characters.";
+    } else if (password.length > 255) {
+        errorMsg.textContent = "Password must be no more than 255 characters.";
+    } else if (/[\r\n]/.test(password)) {
+        errorMsg.textContent = "Password cannot contain line breaks.";
+    } else if (!/[A-Z]/.test(password)) {
+        errorMsg.textContent = "Password must include at least one uppercase letter.";
+    } else if (!/[a-z]/.test(password)) {
+        errorMsg.textContent = "Password must include at least one lowercase letter.";
+    } else if (!/\d/.test(password)) {
+        errorMsg.textContent = "Password must include at least one number.";
+    } else if (!/[\W_]/.test(password)) {
+        errorMsg.textContent = "Password must include at least one special character.";
+    }
+
+    // END OF PASSWORD CHECK
+
+    // START OF USERNAME CHECK
+
     if (!usernamePattern.test(username)) {
         errorMsg.textContent = "Username must be 3-20 characters (letters, numbers, underscores).";
         errorMsg.style.display = "block";
         return;
     }
-    if (!passwordPattern.test(password)) {
-        errorMsg.textContent = "Password must be at least 6 characters with letters and numbers.";
+
+    // END OF USERNAME CHECK
+    if (errorMsg.textContent) {
         errorMsg.style.display = "block";
         return;
     }
-
     try {
         /**
          * Sends a POST request to the server to register a new user.

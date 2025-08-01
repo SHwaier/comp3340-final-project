@@ -1,0 +1,12 @@
+/* Dark Theme */
+:root {
+	--bg-color: #121212;
+	--text-color: #eeeeee;
+	--secondary-text: #aaaaaa;
+	--accent-color: #bb86fc;
+	--accent-hover: #9f6dfc;
+	--border-color: #333333;
+	--card-bg: #1e1e1e;
+	--input-bg: #2a2a2a;
+	--error-color: #ff6b6b;
+}

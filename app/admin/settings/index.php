@@ -112,7 +112,8 @@
                 window.location.reload(); // reload the page to apply the new theme
             } catch (error) {
                 console.error('Error updating theme:', error);
-                alert('Failed to update theme. Please try again.');
+                themeSelectOptions.style.color = 'red';
+                themeSelectOptions.textContent = 'Failed to update theme. Please try again.';
             }
         });
     </script>

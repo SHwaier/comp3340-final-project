@@ -1,0 +1,12 @@
+/* Light Theme */
+:root {
+	--bg-color: #ffffff;
+	--text-color: #222;
+	--secondary-text: #555;
+	--accent-color: #bb86fc;
+	--accent-hover: #9f6dfc;
+	--border-color: #e0e0e0;
+	--card-bg: #f9f9f9;
+	--input-bg: #f0f0f0;
+	--error-color: #e63946;
+}

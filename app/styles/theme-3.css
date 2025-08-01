@@ -1,0 +1,12 @@
+/* Black Friday Theme */
+:root {
+	--bg-color: #121212;
+	--text-color: #eeeeee;
+	--secondary-text: #aaaaaa;
+	--accent-color: #ffcc00;
+	--accent-hover: #ff9900;
+	--border-color: #ff0000;
+	--card-bg: #1e1e1e;
+	--input-bg: #2a2a2a;
+	--error-color: #ff6b6b;
+}

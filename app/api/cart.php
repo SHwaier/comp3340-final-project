@@ -6,30 +6,19 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once './util.php';
 require_once 'auth/authorize.php';
+require_once 'db.php';
 
-$db_host = getenv('DATABASE_HOST');
-$db_user = getenv('DATABASE_USER');
-$db_pass = getenv('DATABASE_PASS');
-$db_name = getenv('DATABASE_NAME');
-
-try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8", $db_user, $db_pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 $payload = authorize_request();
 $userId = $payload['user_id'] ?? null;
 
-if ($userId === null) {
-    http_response_code(401);
-    echo json_encode(["error" => "Unauthorized"]);
-    exit;
+if (!isset($userId)) {
+    error_respond(401, "Unauthorized");
 }
-// adding products to cart
+// retrieve db connection
+$pdo = getPDO();
 // POST: Add item to cart
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
@@ -37,9 +26,7 @@ if ($method === 'POST') {
     $quantity = isset($data['quantity']) ? (int) $data['quantity'] : 1;
 
     if (!$variantId || $quantity <= 0) {
-        http_response_code(400);
-        echo json_encode(["error" => "Invalid variant ID or quantity"]);
-        exit;
+        error_respond(400, "Invalid variant ID or quantity");
     }
 
     try {
@@ -68,9 +55,9 @@ if ($method === 'POST') {
         }
 
         echo json_encode(["message" => "Product added to cart"]);
+        http_response_code(201);
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(["error" => $e->getMessage()]);
+        error_respond(500, $e->getMessage());
     }
 
 } elseif ($method === 'PUT') {
@@ -79,9 +66,7 @@ if ($method === 'POST') {
     $quantity = $data['quantity'] ?? null;
 
     if (!$variantId || $quantity === null || (int) $quantity < 0) {
-        http_response_code(400);
-        echo json_encode(["error" => "Invalid variant ID or quantity"]);
-        exit;
+        error_respond(400, "Invalid variant ID or quantity");
     }
 
     try {
@@ -97,33 +82,28 @@ if ($method === 'POST') {
                 'variant_id' => $variantId
             ]);
             echo json_encode(["message" => "Cart updated"]);
+            http_response_code(200);
         }
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(["error" => $e->getMessage()]);
+        error_respond(500, $e->getMessage());
     }
 
 } elseif ($method === 'DELETE') {
     $data = json_decode(file_get_contents("php://input"), true);
     $variantId = $data['variant_id'] ?? null;
 
-    if (!$variantId) {
-        http_response_code(400);
-        echo json_encode(["error" => "Missing variant ID"]);
-        exit;
-    }
+    if (!$variantId)
+        error_respond(400, "Missing variant ID");
+
 
     $stmt = $pdo->prepare("SELECT * FROM cart WHERE user_id = :user_id AND variant_id = :variant_id");
-    $stmt->execute([
-        'user_id' => $userId,
-        'variant_id' => $variantId
-    ]);
+    $stmt->bindValue(':user_id', $userId);
+    $stmt->bindValue(':variant_id', $variantId);
+    $stmt->execute();
     $item = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$item) {
-        http_response_code(404);
-        echo json_encode(["error" => "Item not found in cart"]);
-        exit;
-    }
+    if (!$item)
+        error_respond(404, "Item not found in cart");
+
     try {
         $stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = :user_id  AND variant_id = :variant_id");
         $stmt->execute([
@@ -133,8 +113,7 @@ if ($method === 'POST') {
         echo json_encode(["message" => "Item removed from cart"]);
         http_response_code(200);
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(["error" => $e->getMessage()]);
+        error_respond(500, $e->getMessage());
     }
 } elseif ($method === 'GET') {
     try {
@@ -157,13 +136,11 @@ if ($method === 'POST') {
         $stmt->execute(['user_id' => $userId]);
         $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        echo json_encode($cartItems, JSON_PRETTY_PRINT);
+        echo json_encode($cartItems);
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(["error" => $e->getMessage()]);
+        error_respond(500, $e->getMessage());
     }
 
 } else {
-    http_response_code(405);
-    echo json_encode(["error" => "Method Not Allowed"]);
+    error_respond(405, "Method Not Allowed.");
 }
