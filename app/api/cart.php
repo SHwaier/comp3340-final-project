@@ -124,6 +124,7 @@ if ($method === 'POST') {
                 c.quantity,
                 p.product_name,
                 p.image_url,
+                p.product_id,
                 p.price AS base_price,
                 v.size,
                 v.addon_price,

@@ -37,43 +37,40 @@ async function fetchCart() {
         items.forEach(item => {
             total += item.final_price * item.quantity;
 
-            const card = document.createElement('div');
+            const card = document.createElement('section');
             card.id = `item-card-${item.variant_id}`;
-            card.className = 'cart-item-card';
+            card.className = 'horizontal-fluid-card';
 
             card.innerHTML = `
-                <div class="flex flex-wrap w-full rounded" style="border: 1px solid var(--border-color); background-color: var(--card-bg); padding: 1rem; gap: 1.5rem; align-items: center;">
-                    <div style="flex: 0 0 120px; max-width: 120px;">
-                        <img src="/product/${item.image_url || 'placeholder.png'}"
-                             alt="${item.product_name}"
-                             onerror="this.onerror=null;this.src='/assets/img/placeholder.png';"
-                             style="width: 100%; height: auto; object-fit: cover; border-radius: 6px;" />
-                    </div>
-                    <div class="flex flex-col" style="flex: 1 1 300px; gap: 0.8rem;">
-                        <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-color);">${item.product_name}</h2>
-                        <p style="font-size: 0.9rem; color: var(--muted-color); margin: 0;">Size: ${item.size}</p>
-
-                        <div class="flex flex-wrap flex-space-between w-full" style="gap: 1rem; align-items: center;">
-                            <div class="flex flex-row gap-1" style="align-items: center;">
-                                <label for="qty-${item.variant_id}" style="font-size: 0.9rem;">Quantity:</label>
-                                <input type="number" id="qty-${item.variant_id}" value="${item.quantity}" min="0"
-                                       style="width: 60px; padding: 0.4rem; font-size: 0.9rem;" />
-                            </div>
-                            <p class="price" style="font-weight: bold; font-size: 1rem; color: var(--accent-color); margin: 0;">
-                                $<span id="total-${item.variant_id}">${(item.final_price * item.quantity).toFixed(2)}</span>
-                            </p>
-                        </div>
-
-                        <div style="text-align: right;">
-                            <button onclick="removeItem(${item.variant_id})"
-                                    style="background-color: red; color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
+            <div class="horizontal-fluid-row">
+            <div class="horizontal-fluid-image">
+                <a href="/product/?id=${item.product_id}" aria-label="View product details">
+                    <img src="/product/${item.image_url || 'placeholder.png'}" alt="${item.product_name}"
+                        onerror="this.onerror=null;this.src='/assets/img/placeholder.png';">
+                </a>
+            </div>
+            <div class="horizontal-fluid-content" style="justify-content: space-between;">
+                <div class="horizontal-fluid-row">
+                    <h5 id="product-title-${item.variant_id}" class="horizontal-fluid-title" role="region"
+                        aria-labelledby="product-title-${item.variant_id}">${item.product_name}</h5>
+                    <p class="horizontal-fluid-text" role="region"
+                        aria-labelledby="product-description-${item.variant_id}">
+                        Size: ${item.size}
+                    </p>
+                    <!-- <p class="horizontal-fluid-text small">Last updated 3 mins ago</p> -->
                 </div>
-            `;
-
+                <div class="actionable-buttons horizontal-fluid-row">
+                    <div class="horizontal-fluid-row"></div>
+                    <input type="number" id="qty-${item.variant_id}" value="${item.quantity}" min="0"
+                        style="width: 60px; padding: 0.4rem; font-size: 0.9rem;" />
+                    <button type="button" class="button" onclick="removeItem(${item.variant_id})">Remove</button>
+                    <p role="region" aria-labelledby="product-price-${item.variant_id}" id="total-${item.variant_id}">
+                        ${(item.final_price
+                    * item.quantity).toFixed(2)}</p>
+                </div>
+            </div>
+        </div>
+        `;
             card.querySelector(`#qty-${item.variant_id}`).addEventListener('change', e => {
                 const newQty = parseInt(e.target.value);
                 if (isNaN(newQty) || newQty < 0) return;
