@@ -9,7 +9,7 @@ $user = getSession();
         <button id="mobile-menu-toggle" aria-label="Toggle menu" style="background: none; border: none;">
             <img src="/assets/svg/menu.svg" alt="Menu Icon" width="30" height="30">
         </button>
-        <?php include_once 'logo.php'; ?>
+        <?php include 'logo.php'; ?>
     </div>
 
     <!-- Sidebar Menu -->
@@ -39,13 +39,10 @@ $user = getSession();
 
     <!-- full desktop only menu -->
     <div class="flex flex-row flex-space-between container" id="desktop-only">
-        <div class="flex flex-col">
-            <a href="/">
-                <img class="logo" src="/assets/logo/luxe-logo-light.png" alt="Luxe Logo - Transparent" width="100"
-                    height="100">
-            </a>
+        <div class="flex" style="flex:1;">
+            <?php include 'logo.php'; ?>
         </div>
-        <nav class="flex flex-col">
+        <nav class="flex">
             <ul class="flex flex-center">
                 <li><a class="hover-underline-animation left" href="/">Home</a></li>
                 <li><a class="hover-underline-animation left" href="/about">About</a></li>
@@ -56,8 +53,8 @@ $user = getSession();
 
         <!-- show cart and user profile icon only if the user is signed in, otherwise show a login text, handled in app.js -->
 
-        <?php if ($user !== null) { ?>
-            <div class="flex flex-row flex-space-between" style="gap: 1rem;">
+        <div class="flex flex-row flex-space-between" style="gap: 1rem; flex: 1; justify-content: flex-end;">
+            <?php if ($user !== null) { ?>
                 <a class="hover-underline-animation left" href="/cart/">
                     <img class="cart-icon icon" src="/assets/svg/cart.svg" alt="Cart Icon" width="30" height="30">
                 </a>
@@ -68,17 +65,21 @@ $user = getSession();
                     <ul class="user-menu-dropdown rounded">
                         <li><a class="hover-underline-animation left" href="/profile">Profile</a></li>
                         <li><a class="hover-underline-animation left" href="/orders">Orders</a></li>
+                        <?php if ($user['role'] === 'Admin') { ?>
+                            <li><a class="hover-underline-animation left" href="/admin">Admin Panel</a></li>
+                        <?php } ?>
                         <li><a class="hover-underline-animation left" href="/logout">Logout</a></li>
                     </ul>
                 </div>
 
 
-            </div>
-        <?php } else { ?>
-            <nav>
-                <a class="hover-underline-animation left" href="/login">Login</a>
-            </nav>
-        <?php } ?>
+            <?php } else { ?>
+                <nav>
+                    <a class="hover-underline-animation left" href="/login">Login</a> | <a
+                        class="hover-underline-animation left" href="/register">Register</a>
+                </nav>
+            <?php } ?>
+        </div>
 
     </div>
 </header>
