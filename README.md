@@ -1,11 +1,8 @@
 # project-comp3077
 
-Authentication using JWT 
-basic middleware implemented to protect some endpoints
-Authentication and authorization are both implemented, users either have the "admin" role, or the "customer"
-Input sanitization is also implemented to protect against SQL injection and XSS attacks
-Database credentials and JWT secret implemented as environment variable inside the Apache server, this way they are not exposed to the public and are kept private.
-Theme can be by an admin from the admin portal at `/admin/settings`
+Authentication is implemented using secure JWT-based middleware to protect sensitive API endpoints. Both authentication and role-based authorization are in place, with users assigned either "admin" or "customer" roles. All user inputs are validated and sanitized to prevent SQL injection and XSS attacks. Environment variables are used to securely store database credentials and JWT secrets, keeping them hidden from the public. The admin dashboard at `/admin/settings` allows theme management, while product management includes creating, editing, and deleting products and their size variants through `admin/products/`. The cart system supports quantity updates and variant-specific pricing, with all cart interactions protected by token authentication. Data fetching and updates are fully asynchronous, and all core functionality has been optimized for performance and security.
+
+
 
 ## Tech Stack:
 ### Backend:
@@ -45,7 +42,10 @@ Luxe/
 ├── product/          → Product detail page and product images
 ├── scripts/          → All JavaScript logic (modular and page-specific)
 ├── shop/             → Main shop/product listing page
-└── styles/           → Global and scoped CSS files
+├── styles/           → Global and scoped CSS files
+├── admin/            → the admin portal for admin users to modify site information
+├── admin/products    → Admins can add, delete, or modify products through here
+└── admin/theme       → Admins can change the theme of the website through here
 ```
 
 ---
