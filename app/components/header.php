@@ -7,7 +7,7 @@ $user = getSession();
     <!-- toggle switch to open the mobile menu, onyl visible on phones and tablets -->
     <div class="mobile-header container flex flex-row flex-space-between" id="mobile-toggle">
         <button id="mobile-menu-toggle" aria-label="Toggle menu" style="background: none; border: none;">
-            <img src="/assets/svg/menu.svg" alt="Menu Icon" width="30" height="30">
+            <img src="/assets/svg/menu.svg" class="icon" alt="Menu Icon" width="30" height="30">
         </button>
         <?php include 'logo.php'; ?>
     </div>

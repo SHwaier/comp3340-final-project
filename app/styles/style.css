@@ -15,7 +15,6 @@ body {
 	transition: all 0.3s ease;
 }
 main {
-	width: 100%;
 	padding: 2rem;
 	min-height: 100dvh;
 }
@@ -30,9 +29,8 @@ a:hover {
 /*** =========================
      GLOBAL STYLES
      ========================= */
-[data-theme="dark"] .icon {
-	/* A handy filter I generated using this cool tool on codepen by some random g: https://codepen.io/sosuke/pen/Pjoqqp */
-	/* Target color is white */
+/* dyanmically assigned to icons by app.js depending on the theme selected for the site */
+.light-icon {
 	filter: invert(100%) sepia(39%) saturate(2%) hue-rotate(349deg) brightness(105%) contrast(101%);
 }
 .flex {
@@ -145,6 +143,21 @@ a:hover {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding-top: 2rem;
+}
+/* ========================
+	LOGO
+	========================*/
+.logo-link {
+	display: flex;
+	align-items: center;
+	justify-content: start;
+	text-decoration: none;
+}
+.logo-img {
+	width: 100%;
+	max-width: 20%;
+	height: auto;
+	transition: transform 0.3s ease;
 }
 
 /* =========================
@@ -518,6 +531,9 @@ select:focus {
 	.horizontal-fluid-image {
 		flex: none;
 	}
+	header .logo-link {
+		justify-content: flex-end;
+	}
 }
 /* tablets */
 @media (min-width: 701px) and (max-width: 1024px) {
@@ -534,6 +550,9 @@ select:focus {
 	}
 	.mobile-header {
 		display: flex;
+	}
+	header .logo-link {
+		justify-content: flex-end;
 	}
 }
 

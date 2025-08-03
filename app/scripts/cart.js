@@ -57,10 +57,8 @@ async function fetchCart() {
                         aria-labelledby="product-description-${item.variant_id}">
                         Size: ${item.size}
                     </p>
-                    <!-- <p class="horizontal-fluid-text small">Last updated 3 mins ago</p> -->
                 </div>
                 <div class="actionable-buttons horizontal-fluid-row">
-                    <div class="horizontal-fluid-row"></div>
                     <input type="number" id="qty-${item.variant_id}" value="${item.quantity}" min="0"
                         style="width: 60px; padding: 0.4rem; font-size: 0.9rem;" />
                     <button type="button" class="button" onclick="removeItem(${item.variant_id})">Remove</button>

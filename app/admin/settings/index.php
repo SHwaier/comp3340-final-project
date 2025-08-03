@@ -5,12 +5,8 @@
     <?php include_once '../../components/metas.php'; ?>
     <title>Admin Settings | Luxe</title>
     <meta name="description" content="Admin dashboard for managing Luxe store.">
-    <style>
-        .admin-main {
-            padding-left: 18rem;
+    <link rel="stylesheet" href="/styles/admin-style.css">
 
-        }
-    </style>
 </head>
 
 <body>

@@ -1,6 +1,16 @@
 <?php
 
-
+/**
+ * Singleton class for managing a single database connection instance.
+ *
+ * This design pattern ensures that only one database connection is established
+ * and shared across all API endpoints, preventing multiple connections and
+ * improving resource management.
+ *
+ * Usage:
+ *   - Retrieve the database connection instance via the provided static method.
+ *   - Ensures consistent and efficient database access throughout the application.
+ */
 function getPDO(): PDO
 {
     $db_host = getenv('DATABASE_HOST');

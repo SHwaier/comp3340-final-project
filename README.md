@@ -97,7 +97,6 @@ JavaScript used across the frontend:
 | `app.js`          | dynamic UI toggling (header/user/menu) and any general frontend js needs |
 | `login.js`        | Handles login form submission and token storage |
 | `register.js`     | Validates and submits registration form, auto-logins |
-| `theme.js`        | Handles theme switching using `data-theme` and backend API endpoints `api/theme.php` and `api/themes.php` |
 | `addToCart.js`    | Handles the logic for adding and sending post requests to add items to the user's cart | 
 | `cart.js`         | Handles the cart logic to delete and change item quantity | 
 
@@ -133,7 +132,7 @@ All data is fetched dynamically via RESTful APIs under `/api/`, with `Bearer` JW
 
 ## 🌙 Theming
 
-- Theme controlled via `data-theme` on `<html>`
+- Theme controlled via dynamically added style sheets depending on the actively selected theme by the admin
 - Switch options: `light`, `dark`, `black-friday`
 - User's preference is saved in `cookie`
 - Active theme is fetched from the DB on load 

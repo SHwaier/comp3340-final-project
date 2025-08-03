@@ -34,9 +34,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 2000);
     });
 
+    // depending on the theme, change the icons
+    changeIcons();
 });
 
-// // this needs to run after everything loads to ensure all elements are available
-// window.onload = function () {
+function changeIcons() {
+    const bgColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg-color')
+        .trim();
 
-// };
+    // Convert hex/rgb to RGB
+    function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const bigint = parseInt(hex, 16);
+        return {
+            r: (bigint >> 16) & 255,
+            g: (bigint >> 8) & 255,
+            b: bigint & 255
+        };
+    }
+
+    function isLightColor({ r, g, b }) {
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        return luminance > 128;
+    }
+
+    const rgb = hexToRgb(bgColor);
+    if (!isLightColor(rgb)) {
+        document.querySelectorAll('.icon').forEach(icon => {
+            icon.classList.add('light-icon');
+        }
+        );
+    }
+}

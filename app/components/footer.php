@@ -4,9 +4,7 @@
 
         <!-- Column 1: Logo -->
         <div class="flex flex-col">
-            <a href="/">
-                <img class="logo" src="/assets/logo/luxe-logo-light.png" alt="Luxe Logo" width="100" height="100">
-            </a>
+            <?php include 'logo.php'; ?>
             <p style="margin-top: 0.5rem; font-size: 0.9rem;">© <?= date("Y") ?> Luxe. All rights reserved.</p>
         </div>
 

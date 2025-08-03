@@ -7,14 +7,23 @@ if (!$user || $user['role'] !== 'Admin') {
     http_response_code(403);
     exit('Access denied.');
 }
+
+
+$product_id = $_GET['id'] ?? null;
+if (!is_numeric($product_id)) {
+    http_response_code(400);
+    echo "Invalid product ID.";
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <?php include_once '../../../components/metas.php'; ?>
-    <title>Create Product | Luxe Admin</title>
-    <meta name="description" content="Add a new product to Luxe.">
+    <title>Edit Product | Luxe Admin</title>
+    <meta name="description" content="Edit existing product.">
 </head>
 
 <body>
@@ -26,7 +35,7 @@ if (!$user || $user['role'] !== 'Admin') {
                 ← Go Back
             </button>
 
-            <h2>Create New Product</h2>
+            <h2>Edit Product</h2>
 
             <form id="product-form" style="display: flex; flex-wrap: wrap; gap: 2rem;"
                 onsubmit="return submitProduct(event)">
@@ -56,11 +65,11 @@ if (!$user || $user['role'] !== 'Admin') {
                     <hr>
                     <h3>Size Variants</h3>
                     <div id="variants">
-                        <!-- JavaScript will populate here -->
+                        <!-- JS will populate -->
                     </div>
                     <button type="button" class="button" onclick="addVariant()">+ Add Size</button>
 
-                    <button type="submit" class="button" style="margin-top: 1rem;">Create Product</button>
+                    <button type="submit" class="button" style="margin-top: 1rem;">Update Product</button>
                 </div>
             </form>
         </div>
@@ -70,33 +79,59 @@ if (!$user || $user['role'] !== 'Admin') {
     <?php include_once '../../../components/scripts.php'; ?>
 
     <script>
+        const productId = <?= (int) $product_id ?>;
+        const token = document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1];
+
+        async function fetchProduct() {
+            const res = await fetch(`/api/products.php?id=${productId}`);
+            const product = await res.json();
+
+            if (!product || !product.product_id) {
+                alert("❌ Product not found.");
+                return;
+            }
+
+            const form = document.getElementById('product-form');
+            form.product_name.value = product.product_name;
+            form.description.value = product.description;
+            form.price.value = product.price;
+            form.stock_quantity.value = product.stock_quantity;
+            form.category.value = product.category ?? '';
+            form.image_url.value = product.image_url ?? '';
+            document.getElementById('preview').src = product.image_url || '/assets/img/placeholder.png';
+
+            // Populate variants
+            product.variants.forEach(v => {
+                addVariant(v.size, v.addon_price, v.stock_quantity);
+            });
+
+            // If no variants exist, add one default
+            if (product.variants.length === 0) {
+                addVariant("M", 0, 0);
+            }
+        }
+
         function addVariant(size = '', addon_price = 0, stock = 0) {
             const container = document.getElementById('variants');
             const index = container.children.length;
-
             container.insertAdjacentHTML('beforeend', `
-        <div style="margin-bottom: 1rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 8px;">
-            <label>Size:</label>
-            <input type="text" name="variants[${index}][size]" value="${size}" required>
-            <label>Add-on Price ($):</label>
-            <input type="number" step="0.01" name="variants[${index}][addon_price]" value="${addon_price}">
-            <label>Stock Quantity:</label>
-            <input type="number" name="variants[${index}][stock_quantity]" value="${stock}">
-        </div>
-    `);
-        }
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
+                <div style="margin-bottom: 1rem; border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 8px;">
+                    <label>Size:</label>
+                    <input type="text" name="variants[${index}][size]" value="${size}" required>
+                    <label>Add-on Price ($):</label>
+                    <input type="number" step="0.01" name="variants[${index}][addon_price]" value="${addon_price}">
+                    <label>Stock Quantity:</label>
+                    <input type="number" name="variants[${index}][stock_quantity]" value="${stock}">
+                </div>
+            `);
         }
 
-        const token = getCookie('token');
         function submitProduct(event) {
             event.preventDefault();
             const form = document.getElementById('product-form');
             const formData = new FormData(form);
             const product = {
+                product_id: productId,
                 product_name: formData.get("product_name"),
                 description: formData.get("description"),
                 price: parseFloat(formData.get("price")),
@@ -106,7 +141,6 @@ if (!$user || $user['role'] !== 'Admin') {
                 variants: []
             };
 
-            // Collect variants
             const variantBlocks = document.querySelectorAll('#variants > div');
             variantBlocks.forEach((block, index) => {
                 const size = block.querySelector(`input[name="variants[${index}][size]"]`).value;
@@ -116,7 +150,7 @@ if (!$user || $user['role'] !== 'Admin') {
             });
 
             fetch('/api/products.php', {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -125,11 +159,11 @@ if (!$user || $user['role'] !== 'Admin') {
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.product_id) {
-                        alert("Product created successfully!");
-                        window.location.href = `/product?id=${data.product_id}`;
+                    if (data.message === "Product updated") {
+                        alert("Product updated successfully!");
+                        window.location.href = `/product?id=${productId}`;
                     } else {
-                        alert("Failed to create product.");
+                        alert("Failed to update product.");
                         console.error(data);
                     }
                 })
@@ -141,13 +175,11 @@ if (!$user || $user['role'] !== 'Admin') {
             return false;
         }
 
-        // Preview image
         document.querySelector('input[name="image_url"]').addEventListener('input', (e) => {
             document.getElementById('preview').src = e.target.value || '/assets/img/placeholder.png';
         });
 
-        // Add one default variant
-        addVariant("M", 0, 5);
+        fetchProduct();
     </script>
 
 </body>

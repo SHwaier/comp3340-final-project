@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="<?= $_COOKIE['theme'] ?? 'light' ?>">
+<html lang="en">
 
 <head>
     <?php require_once '../components/metas.php'; ?>
@@ -133,7 +133,7 @@
             </form>
         </div>
     </div>
-    <script src="scripts/login.js"></script>
+    <script src="/scripts/login.js"></script>
 </body>
 
 </html>

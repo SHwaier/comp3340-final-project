@@ -8,7 +8,7 @@ if (!is_numeric($product_id)) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <?php include_once '../components/metas.php'; ?>
@@ -24,7 +24,7 @@ if (!is_numeric($product_id)) {
 
             <button onclick="history.back()"
                 style="margin-bottom: 1rem; background: none; border: none; color: var(--accent-color); font-size: 1rem; cursor: pointer;">
-                ← Back to Shop
+                ← Go Back
             </button>
 
             <div id="product-content" class="skeleton">

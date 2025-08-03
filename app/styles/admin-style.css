@@ -1,0 +1,50 @@
+:root {
+	--admin-sidebar-width: 18rem;
+}
+#admin-sidebar {
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	height: 100vh;
+	width: var(--admin-sidebar-width);
+	transition: left 0.3s ease;
+	gap: 2rem;
+
+	margin: 0;
+	overflow: auto;
+	padding: 1rem;
+	border-right: 1px solid var(--border-color);
+	background-color: var(--card-bg);
+}
+.admin-main {
+	margin-left: var(--admin-sidebar-width);
+	padding: 2rem;
+	background-color: var(--bg-color);
+}
+
+/* mobile devices */
+@media (max-width: 700px) {
+	#admin-sidebar {
+		width: 100%;
+		height: auto;
+		position: relative;
+	}
+	.admin-main {
+		margin-left: 0;
+	}
+	#admin-sidebar a {
+		text-align: center;
+		float: none;
+	}
+	#admin-sidebar div {
+		text-align: center;
+		justify-content: center;
+	}
+}
+/* tablets */
+@media (min-width: 701px) and (max-width: 1024px) {
+}
+
+/* desktop */
+@media (min-width: 1024px) {
+}

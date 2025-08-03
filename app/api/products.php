@@ -5,13 +5,14 @@ header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 require_once './util.php';
 require_once 'db.php';
+require_once 'auth/authorize.php';
+
 
 $method = $_SERVER['REQUEST_METHOD'];
 // retrieve db connection
 $pdo = getPDO();
 
 if ($method === 'GET') {
-    $product_id = $_GET['id'] ?? null;
 
     try {
         if ($method === 'GET') {
@@ -167,20 +168,150 @@ if ($method === 'GET') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-} else if ($method === 'POST') {
-    // TODO: Check authentication and authorization, only admin can add new products
+} else if ($method === 'POST') { // Creating a new product
+    // check if user is logged in and has admin privileges
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+    if (!isset($userId)) {
+        error_respond(401, "Please login to change the theme");
+    }
+    if ($payload["role"] !== 'Admin') {
+        error_respond(403, "You do not have permission to change the theme");
+    }
 
-    // Handle POST Request - Add New User Profile
     $data = json_decode(file_get_contents("php://input"), true);
-    $data = sanitizeInput($data);
-    // don't allow empty requests 
-    if (empty($data)) {
+
+
+    if (empty($data['product_name']) || !isset($data['price']) || !is_numeric($data['price']) || empty($data['stock_quantity'])) {
         http_response_code(400);
-        echo json_encode(["error" => "Request body is empty"]);
+        echo json_encode(["error" => "Product name and price are required"]);
         exit;
     }
 
+    try {
+        $stmt = $pdo->prepare("INSERT INTO products (product_name, description, price, stock_quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $data['product_name'],
+            $data['description'] ?? '',
+            $data['price'],
+            $data['stock_quantity'] ?? 0,
+            $data['category'] ?? null,
+            $data['image_url'] ?? null
+        ]);
 
+        echo json_encode(["message" => "Product created", "product_id" => $pdo->lastInsertId()]);
+        // After product INSERT
+        $productId = $pdo->lastInsertId();
+
+        if (!empty($data['variants']) && is_array($data['variants'])) {
+            $variantStmt = $pdo->prepare("
+        INSERT INTO product_variants (product_id, size, addon_price, stock_quantity)
+        VALUES (?, ?, ?, ?)
+    ");
+            foreach ($data['variants'] as $variant) {
+                $variantStmt->execute([
+                    $productId,
+                    $variant['size'],
+                    $variant['addon_price'] ?? 0,
+                    $variant['stock_quantity'] ?? 0
+                ]);
+            }
+        }
+
+    } catch (Exception $e) {
+        error_respond(500, $e->getMessage());
+    }
+} else if ($method === 'PUT') { //updating EXISTING product
+    // check if user is logged in and has admin privileges
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+    if (!isset($userId)) {
+        error_respond(401, "Please login to change the theme");
+    }
+    if ($payload["role"] !== 'Admin') {
+        error_respond(403, "You do not have permission to change the theme");
+    }
+
+    $data = json_decode(file_get_contents("php://input"), true);
+    $data = sanitizeInput($data);
+
+    if (empty($data['product_id'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "product_id is required"]);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            UPDATE products SET 
+                product_name = ?, 
+                description = ?, 
+                price = ?, 
+                stock_quantity = ?, 
+                category = ?, 
+                image_url = ?
+            WHERE product_id = ?
+        ");
+        $stmt->execute([
+            $data['product_name'] ?? '',
+            $data['description'] ?? '',
+            $data['price'] ?? 0,
+            $data['stock_quantity'] ?? 0,
+            $data['category'] ?? null,
+            $data['image_url'] ?? null,
+            $data['product_id']
+        ]);
+        // After product UPDATE
+        if (!empty($data['variants']) && is_array($data['variants'])) {
+            // Remove existing
+            $pdo->prepare("DELETE FROM product_variants WHERE product_id = ?")->execute([$data['product_id']]);
+
+            // Insert new
+            $variantStmt = $pdo->prepare("
+        INSERT INTO product_variants (product_id, size, addon_price, stock_quantity)
+        VALUES (?, ?, ?, ?)
+    ");
+            foreach ($data['variants'] as $variant) {
+                $variantStmt->execute([
+                    $data['product_id'],
+                    $variant['size'],
+                    $variant['addon_price'] ?? 0,
+                    $variant['stock_quantity'] ?? 0
+                ]);
+            }
+        }
+
+        echo json_encode(["message" => "Product updated"]);
+    } catch (Exception $e) {
+        error_respond(500, $e->getMessage());
+    }
+} else if ($method === 'DELETE') {
+    // check if user is logged in and has admin privileges
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+    if (!isset($userId)) {
+        error_respond(401, "Please login to change the theme");
+    }
+    if ($payload["role"] !== 'Admin') {
+        error_respond(403, "You do not have permission to change the theme");
+    }
+
+    parse_str(file_get_contents("php://input"), $data);
+
+    if (empty($data['product_id'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "product_id is required"]);
+        exit;
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
+        $stmt->execute([$data['product_id']]);
+
+        echo json_encode(["message" => "Product deleted"]);
+    } catch (Exception $e) {
+        error_respond(500, $e->getMessage());
+    }
 } else {
     http_response_code(405);
     echo json_encode(["error" => "Method Not Allowed. Use GET or POST."]);
