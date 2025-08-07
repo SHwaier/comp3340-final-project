@@ -168,56 +168,123 @@ if ($method === 'GET') {
         http_response_code(500);
         echo json_encode(["error" => $e->getMessage()]);
     }
-} else if ($method === 'POST') { // Creating a new product
-    // check if user is logged in and has admin privileges
+} else if ($method === 'POST') {
+    // -----------------------
+    // 1. Authorization Check
+    // -----------------------
     $payload = authorize_request();
-    $userId = $payload['user_id'] ?? null;
-    if (!isset($userId)) {
-        error_respond(401, "Please login to change the theme");
-    }
-    if ($payload["role"] !== 'Admin') {
-        error_respond(403, "You do not have permission to change the theme");
+    if (!isset($payload['user_id']) || $payload["role"] !== 'Admin') {
+        error_respond(403, "Only admins can add products");
     }
 
-    $data = json_decode(file_get_contents("php://input"), true);
-
-
-    if (empty($data['product_name']) || !isset($data['price']) || !is_numeric($data['price']) || empty($data['stock_quantity'])) {
-        http_response_code(400);
-        echo json_encode(["error" => "Product name and price are required"]);
-        exit;
+    // ---------------------------------
+    // 2. Validate Multipart Form Inputs
+    // ---------------------------------
+    if (empty($_POST['product_data']) || !isset($_FILES['image_file'])) {
+        error_respond(400, "Missing product data or image file");
     }
 
+    // -------------------------------
+    // 3. Decode & Sanitize Input Data
+    // -------------------------------
+    $productData = json_decode($_POST['product_data'], true);
+    if (!$productData) {
+        error_respond(400, "Invalid product data format");
+    }
+    $productData = sanitizeInput($productData);
+
+    // ----------------------
+    // 4. Handle Image Upload
+    // ----------------------
+    $image = $_FILES['image_file'];
+    $uploadDir = __DIR__ . '/../uploads/products/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true); // Create directory if not exists
+    }
+
+    // File extension and MIME type
+    $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+    $mime = mime_content_type($image['tmp_name']);
+    $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    // Validate extension
+    if (!in_array($ext, $allowedExts)) {
+        error_respond(400, "Unsupported file extension. Allowed: JPG, PNG, WEBP.");
+    }
+
+    // Validate MIME type
+    if (!in_array($mime, $allowedTypes)) {
+        error_respond(400, "Invalid image MIME type.");
+    }
+
+    // Validate actual image content
+    $imageInfo = getimagesize($image['tmp_name']);
+    if ($imageInfo === false) {
+        error_respond(400, "Uploaded file is not a valid image.");
+    }
+
+    // Validate file size (max 2MB)
+    $maxSize = 2 * 1024 * 1024; // 2MB
+    if ($image['size'] > $maxSize) {
+        error_respond(400, "Image exceeds maximum size of 2MB.");
+    }
+
+    // Finalize file name and path
+    $filename = uniqid('product_') . '.' . $ext;
+    $destination = $uploadDir . $filename;
+    $image_url = '/uploads/products/' . $filename;
+
+    // Move and secure the file
+    if (!move_uploaded_file($image['tmp_name'], $destination)) {
+        error_respond(500, "Image upload failed.");
+    }
+    chmod($destination, 0644); // Make it readable only
+
+    // ----------------------
+    // 5. Insert Product Info
+    // ----------------------
     try {
-        $stmt = $pdo->prepare("INSERT INTO products (product_name, description, price, stock_quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("
+            INSERT INTO products (product_name, description, price, stock_quantity, category, image_url)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
         $stmt->execute([
-            $data['product_name'],
-            $data['description'] ?? '',
-            $data['price'],
-            $data['stock_quantity'] ?? 0,
-            $data['category'] ?? null,
-            $data['image_url'] ?? null
+            $productData['product_name'],
+            $productData['description'] ?? '',
+            $productData['price'],
+            $productData['stock_quantity'] ?? 0,
+            $productData['category'] ?? null,
+            $image_url
         ]);
 
-        echo json_encode(["message" => "Product created", "product_id" => $pdo->lastInsertId()]);
-        // After product INSERT
         $productId = $pdo->lastInsertId();
 
-        if (!empty($data['variants']) && is_array($data['variants'])) {
+        // ----------------------
+        // 6. Insert Product Variants
+        // ----------------------
+        if (!empty($productData['variants']) && is_array($productData['variants'])) {
             $variantStmt = $pdo->prepare("
-        INSERT INTO product_variants (product_id, size, addon_price, stock_quantity)
-        VALUES (?, ?, ?, ?)
-    ");
-            foreach ($data['variants'] as $variant) {
+                INSERT INTO product_variants (product_id, size, addon_price, stock_quantity)
+                VALUES (?, ?, ?, ?)
+            ");
+            foreach ($productData['variants'] as $v) {
                 $variantStmt->execute([
                     $productId,
-                    $variant['size'],
-                    $variant['addon_price'] ?? 0,
-                    $variant['stock_quantity'] ?? 0
+                    $v['size'],
+                    $v['addon_price'] ?? 0,
+                    $v['stock_quantity'] ?? 0
                 ]);
             }
         }
 
+        // ----------------------
+        // 7. Success Response
+        // ----------------------
+        echo json_encode([
+            "message" => "Product created",
+            "product_id" => $productId
+        ]);
     } catch (Exception $e) {
         error_respond(500, $e->getMessage());
     }

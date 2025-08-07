@@ -26,7 +26,7 @@
                 return;
             }
 
-            const img = "/product/" + (product.image_url || 'placeholder.png');
+            const img = (product.image_url || '/assets/img/placeholder.png');
             const outOfStock = product.stock_quantity == 0;
             const basePrice = parseFloat(product.price).toFixed(2);
 

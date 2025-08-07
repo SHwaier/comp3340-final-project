@@ -20,7 +20,7 @@
                 <h3>🛍️ Create a New Product</h3>
                 <p>This video shows you how to add a new product with size variants and price adjustments.</p>
                 <div class="video-wrapper">
-                    <iframe src="/create.mp4" frameborder="0" allowfullscreen></iframe>
+                    <iframe src="./create.mp4" controls></iframe>
                 </div>
             </div>
 
@@ -28,7 +28,7 @@
                 <h3>✏️ Edit an Existing Product</h3>
                 <p>Learn how to update product info like price, stock, and variants using the edit page.</p>
                 <div class="video-wrapper">
-                    <iframe src="/edit.mp4" frameborder="0" allowfullscreen></iframe>
+                    <video src="./edit.mp4" controls></video>
                 </div>
             </div>
 
@@ -36,7 +36,7 @@
                 <h3>🗑️ Delete a Product</h3>
                 <p>This demo explains how to safely remove a product from your store.</p>
                 <div class="video-wrapper">
-                    <iframe src="/delete" frameborder="0" allowfullscreen></iframe>
+                    <video src="./delete.mp4" controls></video>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
                 <h3>🎨 Change the Active Theme</h3>
                 <p>Here’s how you can preview available themes and set a new active one for your storefront.</p>
                 <div class="video-wrapper">
-                    <iframe src="/theme.mp4" frameborder="0" allowfullscreen></iframe>
+                    <video src="./theme.mp4" controls></video>
                 </div>
             </div>
         </div>
@@ -66,14 +66,6 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             margin-top: 1rem;
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
         }
     </style>
 </body>

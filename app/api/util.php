@@ -5,15 +5,22 @@ function sanitizeInput($data)
     if (!is_array($data)) {
         return htmlspecialchars(strip_tags(trim($data)));
     }
+
     foreach ($data as $key => $value) {
         // Skip password sanitization
         if ($key === 'password') {
             continue;
         }
-        $data[$key] = htmlspecialchars(strip_tags(trim($value)));
+
+        // Recursively sanitize nested arrays
+        $data[$key] = is_array($value)
+            ? sanitizeInput($value)
+            : htmlspecialchars(strip_tags(trim($value)));
     }
+
     return $data;
 }
+
 
 
 class EmailValidator
@@ -131,7 +138,8 @@ class PasswordValidator
         return $this->errors;
     }
 }
-function error_respond($code, $message) {
+function error_respond($code, $message)
+{
     http_response_code($code);
     echo json_encode(["error" => $message]);
     exit;

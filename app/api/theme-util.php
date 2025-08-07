@@ -1,8 +1,8 @@
+<?php
 /**
  * Retrieves the current theme ID from the database.
  * @return int The ID of the current theme.
  */
-<?php
 require_once 'db.php';
 function getCurrentThemeId(): int
 {

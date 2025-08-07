@@ -45,7 +45,7 @@ async function fetchCart() {
             <div class="horizontal-fluid-row">
             <div class="horizontal-fluid-image">
                 <a href="/product/?id=${item.product_id}" aria-label="View product details">
-                    <img src="/product/${item.image_url || 'placeholder.png'}" alt="${item.product_name}"
+                    <img src="${item.image_url || 'placeholder.png'}" alt="${item.product_name}"
                         onerror="this.onerror=null;this.src='/assets/img/placeholder.png';">
                 </a>
             </div>

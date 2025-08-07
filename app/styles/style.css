@@ -356,6 +356,7 @@ nav a {
 	cursor: pointer;
 	transition: background-color 0.2s ease;
 	font-size: 0.95rem;
+	text-align: center;
 }
 
 .product-card button:hover,
@@ -494,6 +495,7 @@ select:focus {
 	justify-content: end;
 	gap: 1rem;
 	align-items: center;
+	place-items: stretch;
 }
 .actionable-buttons p {
 	color: var(--accent-color);

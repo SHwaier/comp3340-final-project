@@ -32,7 +32,7 @@
             card.className = 'product-card';
 
             const img = document.createElement('img');
-            img.src = `/product/${product.image_url || 'placeholder.png'}`;
+            img.src = `${product.image_url || '/assets/img/placeholder.png'}`;
             img.alt = product.product_name;
             img.onerror = () => img.src = '/assets/img/placeholder.png';
             img.loading = 'lazy';
