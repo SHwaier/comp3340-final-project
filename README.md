@@ -99,6 +99,7 @@ JavaScript used across the frontend:
 | `register.js`     | Validates and submits registration form, auto-logins |
 | `addToCart.js`    | Handles the logic for adding and sending post requests to add items to the user's cart | 
 | `cart.js`         | Handles the cart logic to delete and change item quantity | 
+| `admin-products.js` | Diaplays all products in the products page within the admin portal, from there admins can, create, delete, edit and/or add products |
 
 ---
 

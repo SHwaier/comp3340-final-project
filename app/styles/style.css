@@ -65,7 +65,10 @@ a:hover {
 	width: 100%;
 }
 .rounded {
-	border-radius: 5px;
+	border-radius: 8px;
+}
+.border {
+	border: 1px solid var(--border-color);
 }
 .hidden {
 	display: none;
@@ -74,7 +77,36 @@ a:hover {
 	display: inline-block;
 	position: relative;
 }
+.button {
+	background-color: var(--accent-color);
+	color: var(--text-color);
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	font-size: 0.95rem;
+	text-align: center;
+}
 
+.button:hover {
+	color: var(--text-color);
+	background-color: var(--accent-hover);
+}
+.button-secondary {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	padding: 0.5rem 1rem;
+	border: 1px solid var(--accent-color);
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	font-size: 0.95rem;
+	text-align: center;
+}
+.button-secondary:hover {
+	background-color: var(--accent-hover);
+}
 .hover-underline-animation::after {
 	content: "";
 	position: absolute;
@@ -344,25 +376,6 @@ nav a {
 	font-weight: bold;
 	font-size: 1.1rem;
 	color: var(--accent-color);
-}
-
-.product-card button,
-.button {
-	background-color: var(--accent-color);
-	color: var(--text-color);
-	padding: 0.5rem 1rem;
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-	font-size: 0.95rem;
-	text-align: center;
-}
-
-.product-card button:hover,
-.button:hover {
-	color: var(--text-color);
-	background-color: var(--accent-hover);
 }
 
 /* =========================

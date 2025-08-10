@@ -1,3 +1,13 @@
+<?php
+require_once __DIR__ . '/../../api/auth/getSession.php';
+$user = getSession();
+
+// Block access unless user is admin
+if (!$user || $user['role'] !== 'Admin') {
+    http_response_code(403);
+    exit('Access denied.');
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
