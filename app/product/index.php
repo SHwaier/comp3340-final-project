@@ -52,114 +52,158 @@ if (!is_numeric($product_id)) {
     <?php include_once '../components/footer.php'; ?>
     <?php include_once '../components/scripts.php'; ?>
     <script>
-        const productId = "<?= htmlspecialchars($product_id) ?>";
+        const productId = "<?= htmlspecialchars($product_id, ENT_QUOTES, 'UTF-8') ?>";
+        const fallbackImage = '/assets/img/placeholder.png';
+        const token = window.token || localStorage.getItem('token') || '';
 
         if (!productId) {
-            document.getElementById('product-content').innerHTML = `<p style="color: var(--error-color);">❌ Product ID is missing.</p>`;
+            document.getElementById('product-content').innerHTML =
+                `<p style="color: var(--error-color);">❌ Product ID is missing.</p>`;
         } else {
-            fetch(`/api/products.php?id=${productId}`)
-                .then(res => res.json())
-                .then(product => {
-                    if (!product || !product.product_id) {
-                        document.getElementById('product-content').innerHTML = `<p style="color: var(--error-color);">❌ Product not found.</p>`;
-                        return;
-                    }
+            loadProduct(productId);
+        }
 
-                    const fallbackImage = '/assets/img/placeholder.png';
-                    const basePrice = parseFloat(product.price).toFixed(2);
-                    const sizes = product.variants.map(v => v.size);
-                    const uniqueSizes = [...new Set(sizes)];
+        async function loadProduct(id) {
+            try {
+                const res = await fetch(`/api/products.php?id=${encodeURIComponent(id)}`);
+                const data = await res.json();
+                const product = Array.isArray(data) ? data[0] : data;
 
-                    const sizeOptions = uniqueSizes.map(size => `<option value="${size}">${size}</option>`).join('');
+                if (!product || !product.product_id) {
+                    document.getElementById('product-content').innerHTML =
+                        `<p style="color: var(--error-color);">❌ Product not found.</p>`;
+                    return;
+                }
 
-                    document.getElementById('product-content').classList.remove('skeleton');
-                    document.getElementById('product-content').innerHTML = `
+                // Make available for later use
+                window.currentProduct = product;
+
+                const basePrice = Number(product.price || 0);
+                const sizes = (product.variants || []).map(v => v.size);
+                const uniqueSizes = [...new Set(sizes)];
+                const sizeOptions = uniqueSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('');
+
+                const html = `
                     <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
                         <div style="flex: 1 1 300px;">
-                            <img src="${product.image_url}" alt="${product.product_name}"
+                            <img src="${product.image_url || fallbackImage}" alt="${escapeHtml(product.product_name)}"
                                  onerror="this.onerror=null;this.src='${fallbackImage}'"
                                  style="width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         </div>
                         <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 1.2rem;">
-                            <h1 style="font-size: 2rem;">${product.product_name}</h1>                            
-                            <p id="price" style="font-size: 1.25rem; font-weight: bold;">$${basePrice}</p>
+                            <h1 style="font-size: 2rem;">${escapeHtml(product.product_name)}</h1>
+                            <p id="price" style="font-size: 1.25rem; font-weight: bold;">$${basePrice.toFixed(2)}</p>
+
+                            ${(product.variants && product.variants.length) ? `
                             <div>
                                 <label for="size-select" style="font-weight: bold;">Size:</label>
                                 <select id="size-select" style="margin-left: 0.5rem;">${sizeOptions}</select>
                                 <p id="addon-price-msg" style="margin-top: 0.5rem; color: var(--success-color); display: none;"></p>
                             </div>
-                            <p style="font-size: 1rem; line-height: 1.6;">${product.description}</p>
+                            ` : ''}
 
-                            <button class="check-button button" id="add-to-cart-button">
-                                <span class="checkmark">&#10003;</span>
-                                <span class="btn-text">Add to Cart</span>
-                            </button>
+                            <p style="font-size: 1rem; line-height: 1.6;">${escapeHtml(product.description || '')}</p>
+
+                            ${(!product.variants || product.variants.length === 0 || Number(product.stock_quantity) === 0)
+                        ? `<span style="color: red; font-weight: bold;">Out of Stock</span>`
+                        : `
+                                <button class="check-button button" id="add-to-cart-button">
+                                    <span class="checkmark">&#10003;</span>
+                                    <span class="btn-text">Add to Cart</span>
+                                </button>
+                                `}
                         </div>
                     </div>
                 `;
 
-                    // Store for later lookup
-                    window.currentProduct = product;
+                const container = document.getElementById('product-content');
+                container.classList.remove('skeleton');
+                container.innerHTML = html;
 
-                    document.getElementById('size-select').addEventListener('change', () => {
-                        const selectedSize = document.getElementById('size-select').value;
+                // Wire up behaviors if we have variants
+                if (product.variants && product.variants.length) {
+                    const sizeSelect = document.getElementById('size-select');
+                    const priceEl = document.getElementById('price');
+                    const msgEl = document.getElementById('addon-price-msg');
+
+                    const updatePrice = () => {
+                        const selectedSize = sizeSelect.value;
                         const variant = product.variants.find(v => v.size === selectedSize);
-                        const total = (parseFloat(product.price) + parseFloat(variant.addon_price)).toFixed(2);
-                        document.getElementById('price').innerText = `$${total}`;
+                        if (!variant) return;
 
-                        const msgEl = document.getElementById('addon-price-msg');
-                        if (variant.addon_price > 0) {
+                        const total = basePrice + Number(variant.addon_price || 0);
+                        priceEl.textContent = `$${total.toFixed(2)}`;
+
+                        if (Number(variant.addon_price) > 0) {
                             msgEl.style.display = 'block';
-                            msgEl.textContent = `+ $${parseFloat(variant.addon_price).toFixed(2)} for this size`;
+                            msgEl.textContent = `+ $${Number(variant.addon_price).toFixed(2)} for this size`;
                         } else {
                             msgEl.style.display = 'none';
                             msgEl.textContent = '';
                         }
-                    });
-                    document.getElementById('add-to-cart-button').addEventListener('click', () => {
-                        const selectedSize = document.getElementById('size-select').value;
-                        const product = window.currentProduct;
-                        const variant = product.variants.find(v => v.size === selectedSize);
+                    };
 
-                        if (!variant) {
-                            alert("Please select a valid size.");
-                            return;
-                        }
+                    sizeSelect.addEventListener('change', updatePrice);
+                    updatePrice(); // initial
 
-                        addToCart(product.product_id, variant.variant_id);
-                    });
+                    const addBtn = document.getElementById('add-to-cart-button');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', async () => {
+                            const selectedSize = sizeSelect.value;
+                            const variant = product.variants.find(v => v.size === selectedSize);
 
-                    // Trigger price update on first render
-                    document.getElementById('size-select').dispatchEvent(new Event('change'));
-                })
-                .catch(err => {
-                    document.getElementById('product-content').innerHTML = `<p style="color: var(--error-color);">Error loading product.</p>`;
-                    console.error(err);
-                });
+                            if (!variant) {
+                                alert("Please select a valid size.");
+                                return;
+                            }
+                            try {
+                                await addToCart(variant.variant_id, 1);
+                                addBtn.classList.add('show-check');
+                                setTimeout(() => addBtn.classList.remove('show-check'), 1200);
+                            } catch (e) {
+                                console.error(e);
+                                alert(e.message || 'Failed to add to cart.');
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('product-content').innerHTML =
+                    `<p style="color: var(--error-color);">Error loading product.</p>`;
+            }
         }
 
-        function addToCart(productId) {
-            const product = window.currentProduct;
-            const selectedSize = document.getElementById('size-select').value;
-            const variant = product.variants.find(v => v.size === selectedSize);
-
-            if (!variant) {
-                alert("Please select a valid size.");
-                return;
-            }
-
-            fetch('/api/cart.php', {
+        // Consistent contract: pass just the variantId (and optional qty).
+        async function addToCart(variantId, quantity = 1) {
+            const res = await fetch('/api/cart.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ variant_id: variant.variant_id, quantity: 1 })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Added to cart:", data);
-                })
-                .catch(err => {
-                    console.error("Cart error:", err);
-                });
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: `variant_id=${encodeURIComponent(variantId)}&quantity=${encodeURIComponent(quantity)}`
+            });
+
+            let data = null;
+            try { data = await res.json(); } catch { }
+
+            if (!res.ok) {
+                const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
+                if (res.status === 401) throw new Error('Please sign in to add items to your cart.');
+                throw new Error(msg);
+            }
+            return data;
+        }
+
+        // Simple HTML escape for dynamic text nodes
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
     </script>
 
