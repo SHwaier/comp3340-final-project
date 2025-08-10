@@ -50,7 +50,7 @@
                             ${variantOptions}
                         </select>
                     </div>
-                    <button class="check-button" onclick="handleVariantCart(${product.product_id})">
+                    <button class="check-button button" onclick="handleVariantCart(${product.product_id})">
                         <span class="checkmark">&#10003;</span>
                         <span class="btn-text">Add to Cart</span>
                     </button>

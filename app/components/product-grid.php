@@ -75,7 +75,7 @@
                 });
 
                 const btn = document.createElement('button');
-                btn.className = 'check-button';
+                btn.className = 'check-button button';
                 btn.innerHTML = `<span class="checkmark">&#10003;</span><span class="btn-text">Add to Cart</span>`;
                 btn.onclick = () => handleVariantCart(product.product_id);
 
