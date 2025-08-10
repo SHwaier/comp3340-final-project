@@ -50,7 +50,11 @@ if ($method === 'POST') {
         http_response_code(500);
         echo json_encode(["error" => "Login failed", "details" => $e->getMessage()]);
     }
+} elseif ($method === 'OPTIONS') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
 } else {
-    http_response_code(405);
-    echo json_encode(["error" => "Method not allowed"]);
+    error_respond(405, "Method not allowed");
 }

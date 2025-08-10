@@ -23,7 +23,7 @@ if ($method === 'GET') {
             $all = isset($_GET['all']) && $_GET['all'] === 'true'; // Fetch all products
 
             try {
-                // --- 1. Single Product by ID ---
+                // 1. Single Product by ID 
                 if (is_numeric($product_id)) {
                     // Fetch one product's base info
                     $stmt = $pdo->prepare("
@@ -54,7 +54,7 @@ if ($method === 'GET') {
                     exit;
                 }
 
-                // --- 2. Multiple Products by IDs ---
+                // 2. Multiple Products by IDs
                 elseif (!empty($ids)) {
                     // Convert string "1,2,3" to array [1,2,3]
                     $idArray = array_filter(array_map('intval', explode(',', $ids)));
@@ -84,7 +84,7 @@ if ($method === 'GET') {
                     exit;
                 }
 
-                // --- 3. Latest N Products ---
+                // 3. Latest N Products 
                 elseif (is_numeric($latest)) {
                     $limit = (int) $latest;
 
@@ -109,7 +109,7 @@ if ($method === 'GET') {
                     exit;
                 }
 
-                // --- 4. All Products ---
+                // 4. All Products
                 elseif ($all) {
                     // Fetch every product
                     $stmt = $pdo->query("SELECT * FROM products ORDER BY product_id DESC");
@@ -130,7 +130,7 @@ if ($method === 'GET') {
                     exit;
                 }
 
-                // --- 5. No valid parameters ---
+                // 5. No valid parameters
                 else {
                     echo json_encode([]); // Return empty array
                     exit;
@@ -169,37 +169,29 @@ if ($method === 'GET') {
         echo json_encode(["error" => $e->getMessage()]);
     }
 } else if ($method === 'POST') {
-    // -----------------------
     // 1. Authorization Check
-    // -----------------------
     $payload = authorize_request();
     if (!isset($payload['user_id']) || $payload["role"] !== 'Admin') {
         error_respond(403, "Only admins can add products");
     }
 
-    // ---------------------------------
     // 2. Validate Multipart Form Inputs
-    // ---------------------------------
     if (empty($_POST['product_data']) || !isset($_FILES['image_file'])) {
         error_respond(400, "Missing product data or image file");
     }
 
-    // -------------------------------
     // 3. Decode & Sanitize Input Data
-    // -------------------------------
     $productData = json_decode($_POST['product_data'], true);
     if (!$productData) {
         error_respond(400, "Invalid product data format");
     }
     $productData = sanitizeInput($productData);
 
-    // ----------------------
     // 4. Handle Image Upload
-    // ----------------------
     $image = $_FILES['image_file'];
     $uploadDir = __DIR__ . '/../uploads/products/';
     if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true); // Create directory if not exists
+        mkdir($uploadDir, 0755, true); // Create directory if it doens't exist
     }
 
     // File extension and MIME type
@@ -241,9 +233,7 @@ if ($method === 'GET') {
     }
     chmod($destination, 0644); // Make it readable only
 
-    // ----------------------
     // 5. Insert Product Info
-    // ----------------------
     try {
         $stmt = $pdo->prepare("
             INSERT INTO products (product_name, description, price, stock_quantity, category, image_url)
@@ -260,9 +250,7 @@ if ($method === 'GET') {
 
         $productId = $pdo->lastInsertId();
 
-        // ----------------------
         // 6. Insert Product Variants
-        // ----------------------
         if (!empty($productData['variants']) && is_array($productData['variants'])) {
             $variantStmt = $pdo->prepare("
                 INSERT INTO product_variants (product_id, size, addon_price, stock_quantity)
@@ -278,9 +266,6 @@ if ($method === 'GET') {
             }
         }
 
-        // ----------------------
-        // 7. Success Response
-        // ----------------------
         echo json_encode([
             "message" => "Product created",
             "product_id" => $productId
@@ -288,7 +273,7 @@ if ($method === 'GET') {
     } catch (Exception $e) {
         error_respond(500, $e->getMessage());
     }
-} else if ($method === 'PUT') { //updating EXISTING product
+} elseif ($method === 'PUT') { //updating EXISTING product
     // check if user is logged in and has admin privileges
     $payload = authorize_request();
     $userId = $payload['user_id'] ?? null;
@@ -352,36 +337,54 @@ if ($method === 'GET') {
     } catch (Exception $e) {
         error_respond(500, $e->getMessage());
     }
-} else if ($method === 'DELETE') {
-    // check if user is logged in and has admin privileges
+} elseif ($method === 'DELETE') {
     $payload = authorize_request();
     $userId = $payload['user_id'] ?? null;
-    if (!isset($userId)) {
-        error_respond(401, "Please login to change the theme");
-    }
-    if ($payload["role"] !== 'Admin') {
-        error_respond(403, "You do not have permission to change the theme");
+    if (!$userId)
+        error_respond(401, "Please log in to delete products");
+    if (($payload['role'] ?? '') !== 'Admin')
+        error_respond(403, "You do not have permission to delete products");
+
+    $raw = file_get_contents('php://input');
+    $ctype = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (stripos($ctype, 'application/json') !== false) {
+        $data = json_decode($raw, true) ?? [];
+    } else {
+        parse_str($raw, $data); // handles x-www-form-urlencoded
     }
 
-    parse_str(file_get_contents("php://input"), $data);
-
-    if (empty($data['product_id'])) {
+    $productId = isset($data['product_id']) ? (int) $data['product_id'] : 0;
+    if ($productId <= 0) {
         http_response_code(400);
-        echo json_encode(["error" => "product_id is required"]);
+        header('Content-Type: application/json');
+        echo json_encode(["error" => "product_id is required and must be a positive integer"]);
         exit;
     }
 
     try {
         $stmt = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
-        $stmt->execute([$data['product_id']]);
+        $stmt->execute([$productId]);
 
-        echo json_encode(["message" => "Product deleted"]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            header('Content-Type: application/json');
+            echo json_encode(["error" => "Product not found"]);
+            exit;
+        }
+
+        http_response_code(204);
+        exit;
     } catch (Exception $e) {
-        error_respond(500, $e->getMessage());
+        error_respond(500, "Server error");
     }
+} elseif ($method === 'OPTIONS') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
 } else {
-    http_response_code(405);
-    echo json_encode(["error" => "Method Not Allowed. Use GET or POST."]);
+    error_respond(405, "Method not allowed.");
 }
+
 
 ?>

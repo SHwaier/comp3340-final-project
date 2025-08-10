@@ -25,7 +25,7 @@ if ($method === 'GET') {
         error_respond(500, $e->getMessage());
     }
     // updating the active theme
-} else if ($method === 'PUT') {
+} elseif ($method === 'PUT') {
     // check if user is logged in and has admin privileges
     $payload = authorize_request();
     $userId = $payload['user_id'] ?? null;
@@ -51,4 +51,11 @@ if ($method === 'GET') {
     } catch (Exception $e) {
         error_respond(500, $e->getMessage());
     }
+} elseif ($method === 'OPTIONS') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
+} else {
+    error_respond(405, "Method not allowed.");
 }

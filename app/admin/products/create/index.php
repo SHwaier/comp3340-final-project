@@ -145,8 +145,8 @@ if (!$user || $user['role'] !== 'Admin') {
                 .then(res => res.json())
                 .then(data => {
                     if (data.product_id) {
-                        alert("✅ Product created successfully!");
-                        window.location.href = `/admin/products.php?id=${data.product_id}`;
+                        alert(" Product created successfully!");
+                        window.location.href = `/product/?id=${data.product_id}`;
                     } else {
                         alert("❌ Failed to create product.");
                         console.error(data);

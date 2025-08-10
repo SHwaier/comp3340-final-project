@@ -17,9 +17,7 @@ if ($method === 'GET') {
 
     $userId = $payload['user_id'] ?? null;
     if (!isset($userId)) {
-        http_response_code(400);
-        echo json_encode(["error" => "Missing user ID"]);
-        exit;
+        error_respond(400, "Missing user ID");
     }
     try {
         // 
@@ -46,12 +44,12 @@ if ($method === 'GET') {
         exit;
     }
 
-} //TODO: maybe switch to PUT method for updating user profile, and POST for creating new users would be handled inside the register.php file 
-else if ($method === 'PUT') {
-
+} elseif ($method === 'OPTIONS') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
 } else {
-    http_response_code(405);
-    echo json_encode(["error" => "Method Not Allowed. Use GET or POST."]);
+    error_respond(405, "Method not allowed.");
 }
-
 ?>

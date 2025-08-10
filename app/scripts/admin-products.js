@@ -53,33 +53,38 @@ async function fetchProducts() {
         productsContainer.innerHTML = '<p style="color: var(--error-color);">Error loading products.</p>';
     }
 }
-function removeItem(productId) {
+async function removeItem(productId) {
     if (!confirm("Are you sure you want to delete this product? This cannot be undone.")) return;
 
-    const token = document.cookie.split('; ').find(r => r.startsWith('token='))?.split('=')[1];
+    const token = document.cookie.split("; ").find(r => r.startsWith("token="))?.split("=")[1];
+    if (!token) { alert("Not authenticated."); return; }
 
-    fetch('/api/products.php', {
+    const res = await fetch('/api/products.php', {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: `product_id=${productId}`
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.message === "Product deleted") {
-                alert("Product deleted.");
-                Location.reload(); // Reload the page to reflect changes
-            } else {
-                alert("Failed to delete product.");
-                console.error(data);
-            }
-        })
-        .catch(err => {
-            console.error("Delete error:", err);
-            alert("Server error.");
-        });
+        body: JSON.stringify({ product_id: productId })
+    });
+
+
+    if (res.status === 204) {
+        alert("Product deleted.");
+        location.reload();
+        return;
+    }
+
+    let data = null;
+    try { data = await res.json(); } catch (_) { }
+
+    if (res.ok) {
+        alert(data?.message || "Product deleted.");
+        location.reload();
+    } else {
+        console.error("Delete failed:", data);
+        alert(data?.error || `Failed to delete product (${res.status}).`);
+    }
 }
 
 

@@ -75,7 +75,12 @@ if ($method === 'POST') {
         echo json_encode(["error" => "Registration failed", "details" => $e->getMessage()]);
         http_response_code(500);
     }
+} elseif ($method === 'OPTIONS') {
+    
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
 } else {
-    echo json_encode(["error" => "Method not allowed"]);
-    http_response_code(405);
+    error_respond(405, "Method not allowed!");
 }

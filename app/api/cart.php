@@ -11,16 +11,17 @@ require_once 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-$payload = authorize_request();
-$userId = $payload['user_id'] ?? null;
 
-if (!isset($userId)) {
-    error_respond(401, "Unauthorized");
-}
 // retrieve db connection
 $pdo = getPDO();
 // POST: Add item to cart
 if ($method === 'POST') {
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+
+    if (!isset($userId)) {
+        error_respond(401, "Unauthorized");
+    }
     $data = json_decode(file_get_contents("php://input"), true);
     $variantId = $data['variant_id'] ?? null;
     $quantity = isset($data['quantity']) ? (int) $data['quantity'] : 1;
@@ -61,6 +62,12 @@ if ($method === 'POST') {
     }
 
 } elseif ($method === 'PUT') {
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+
+    if (!isset($userId)) {
+        error_respond(401, "Unauthorized");
+    }
     $data = json_decode(file_get_contents("php://input"), true);
     $variantId = $data['variant_id'] ?? null;
     $quantity = $data['quantity'] ?? null;
@@ -89,6 +96,12 @@ if ($method === 'POST') {
     }
 
 } elseif ($method === 'DELETE') {
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+
+    if (!isset($userId)) {
+        error_respond(401, "Unauthorized");
+    }
     $data = json_decode(file_get_contents("php://input"), true);
     $variantId = $data['variant_id'] ?? null;
 
@@ -116,6 +129,12 @@ if ($method === 'POST') {
         error_respond(500, $e->getMessage());
     }
 } elseif ($method === 'GET') {
+    $payload = authorize_request();
+    $userId = $payload['user_id'] ?? null;
+
+    if (!isset($userId)) {
+        error_respond(401, "Unauthorized");
+    }
     try {
         $stmt = $pdo->prepare("
             SELECT 
@@ -142,6 +161,11 @@ if ($method === 'POST') {
         error_respond(500, $e->getMessage());
     }
 
+} elseif ($method === 'OPTIONS') {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "OK"]);
+    exit;
 } else {
     error_respond(405, "Method Not Allowed.");
 }
